@@ -16,6 +16,7 @@ struct Counter {
     next_value: String,
     operator: String,
     any_operator: bool,
+    value_int: i32,
     one_button: button::State,
     two_button: button::State,
     three_button: button::State,
@@ -27,7 +28,11 @@ struct Counter {
     nine_button: button::State,
     minus_button: button::State,
     zero_button: button::State,
+    multiply_button: button::State,
+    divide_button: button::State,
     plus_button: button::State,
+    equals_button: button::State,
+    clear_button: button::State,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -44,6 +49,10 @@ enum Message {
     MinusPressed,
     ZeroPressed,
     PlusPressed,
+    MultiplyPressed,
+    DividePressed,
+    EqualsPressed,
+    ClearPressed,
 }
 
 #[derive(Debug)]
@@ -145,6 +154,38 @@ impl Application for Counter {
                 self.operator += concat!("+");
                 self.any_operator = true;
             }
+            Message::MultiplyPressed => {
+                self.operator += concat!("*");
+                self.any_operator = true;
+            }
+            Message::DividePressed => {
+                self.operator += concat!("/");
+                self.any_operator = true;
+            }
+            Message::EqualsPressed => {
+                let value: i32 = self.value.parse().unwrap();
+                let next_value: i32 = self.next_value.trim().parse().unwrap();
+                if self.operator == "+" {
+                    self.value_int = value + next_value
+                };
+                if self.operator == "-" {
+                    self.value_int = value - next_value
+                };
+                if self.operator == "*" {
+                    self.value_int = value * next_value
+                };
+                if self.operator == "/" {
+                    self.value_int = value / next_value
+                };
+                self.operator += concat!("=");
+            }
+            Message::ClearPressed => {
+                self.any_operator = false;
+                self.operator = "".to_string();
+                self.value_int = 0;
+                self.value = "".to_string();
+                self.next_value = "".to_string();
+            }
         }
 
         Command::none()
@@ -159,7 +200,8 @@ impl Application for Counter {
                         .spacing(50)
                         .push(Text::new(self.value.to_string()).size(50))
                         .push(Text::new(self.operator.to_string()).size(50))
-                        .push(Text::new(self.next_value.to_string()).size(50)),
+                        .push(Text::new(self.next_value.to_string()).size(50))
+                        .push(Text::new(self.value_int.to_string()).size(50)),
                 )
                 .style(style_text_input::Container),
             )
@@ -334,6 +376,65 @@ impl Application for Counter {
                             )
                             //.style(style_action_button::Button)
                             .on_press(Message::PlusPressed)
+                            .padding(10)
+                            //.background
+                            .min_width(60),
+                        ),
+                )
+                .style(style_action_nav::Container),
+            )
+            .push(
+                Container::new(
+                    Row::new()
+                        .align_items(Align::Start)
+                        .spacing(10)
+                        .push(
+                            Button::new(
+                                &mut self.multiply_button,
+                                Text::new("*")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center)
+                                    .vertical_alignment(VerticalAlignment::Top),
+                            )
+                            .on_press(Message::MultiplyPressed)
+                            .padding(10)
+                            .min_width(60),
+                        )
+                        .push(
+                            Button::new(
+                                &mut self.divide_button,
+                                Text::new("/")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            //.style(style_action_button::Button)
+                            .on_press(Message::DividePressed)
+                            .padding(10)
+                            //.background
+                            .min_width(60),
+                        )
+                        .push(
+                            Button::new(
+                                &mut self.equals_button,
+                                Text::new("=")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            //.style(style_action_button::Button)
+                            .on_press(Message::EqualsPressed)
+                            .padding(10)
+                            //.background
+                            .min_width(60),
+                        )
+                        .push(
+                            Button::new(
+                                &mut self.clear_button,
+                                Text::new("Clr")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            //.style(style_action_button::Button)
+                            .on_press(Message::ClearPressed)
                             .padding(10)
                             //.background
                             .min_width(60),
