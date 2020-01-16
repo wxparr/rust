@@ -192,9 +192,7 @@ enum Step {
 pub enum StepMessage {
     InputChanged(String),
     ToggleSecureInput(bool),
-    OnePressed(bool, String, String),
-    TwoPressed(bool, String, String),
-    ThreePressed(bool, String, String),
+    ButtonPressed(String, bool, String, String),
 }
 
 impl<'a> Step {
@@ -210,16 +208,14 @@ impl<'a> Step {
                     *is_secure = toggle;
                 }
             }
-            StepMessage::ButtonPressed(any_operator, left_value, right_value) => {
+            StepMessage::ButtonPressed(button, any_operator, left_value, right_value) => {
                 if let Step::TextInput { value, .. } = self {
-                    *value = left_value;
+                    if any_operator {
+                        *value = format!("{}{}", button, left_value);
+                    } else {
+                        *value = format!("{}{}", button, right_value);
+                    }
                 }
-
-                // if !any_operator {
-                //     value += concat!("1")
-                // } else {
-                //     next_value += concat!("1")
-                // };
             }
         };
     }
@@ -265,9 +261,9 @@ impl<'a> Step {
                 next_value,
                 equals_string,
                 value_int,
-                *one_button,
-                *two_button,
-                *three_button,
+                one_button,
+                two_button,
+                three_button,
             ),
         }
         .into()
@@ -338,9 +334,9 @@ impl<'a> Step {
         next_value: &str,
         equals_string: &str,
         value_int: &i32,
-        one_button: button::State,
-        two_button: button::State,
-        three_button: button::State,
+        one_button: &'a mut button::State,
+        two_button: &'a mut button::State,
+        three_button: &'a mut button::State,
     ) -> Column<'a, StepMessage> {
         Self::container("Calculator!")
             .push(Text::new("Crypto Calculator"))
@@ -364,35 +360,50 @@ impl<'a> Step {
                         .spacing(10)
                         .push(
                             Button::new(
-                                &mut one_button,
+                                one_button,
                                 Text::new("1")
                                     .color(Color::WHITE)
                                     .horizontal_alignment(HorizontalAlignment::Center)
                                     .vertical_alignment(VerticalAlignment::Top),
                             )
-                            // .on_press(StepMessage::OnePressed)
+                            .on_press(StepMessage::ButtonPressed(
+                                "1".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
                             .padding(10)
                             .min_width(60),
                         )
                         .push(
                             Button::new(
-                                &mut two_button,
+                                two_button,
                                 Text::new("2")
                                     .color(Color::WHITE)
                                     .horizontal_alignment(HorizontalAlignment::Center),
                             )
-                            // .on_press(StepMessage::TwoPressed)
+                            .on_press(StepMessage::ButtonPressed(
+                                "1".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
                             .padding(10)
                             .min_width(60),
                         )
                         .push(
                             Button::new(
-                                &mut three_button,
+                                three_button,
                                 Text::new("3")
                                     .color(Color::WHITE)
                                     .horizontal_alignment(HorizontalAlignment::Center),
                             )
-                            //  .on_press(StepMessage::ThreePressed)
+                            .on_press(StepMessage::ButtonPressed(
+                                "1".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
                             .padding(10)
                             .min_width(60),
                         ),
