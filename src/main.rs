@@ -16,6 +16,7 @@ struct Counter {
     next_value: String,
     operator: String,
     any_operator: bool,
+    equals_string: String,
     value_int: i32,
     one_button: button::State,
     two_button: button::State,
@@ -140,7 +141,8 @@ impl Application for Counter {
             }
             // if operator flush input value
             Message::MinusPressed => {
-                self.operator += concat!("-");
+                //self.operator += concat!("-");
+                self.operator = "-".to_string();
                 self.any_operator = true;
             }
             Message::ZeroPressed => {
@@ -151,15 +153,18 @@ impl Application for Counter {
                 };
             }
             Message::PlusPressed => {
-                self.operator += concat!("+");
+                //self.operator += concat!("+");
+                self.operator = "+".to_string();
                 self.any_operator = true;
             }
             Message::MultiplyPressed => {
-                self.operator += concat!("*");
+                //self.operator += concat!("*");
+                self.operator = "*".to_string();
                 self.any_operator = true;
             }
             Message::DividePressed => {
-                self.operator += concat!("/");
+                //self.operator += concat!("/");
+                self.operator = "/".to_string();
                 self.any_operator = true;
             }
             Message::EqualsPressed => {
@@ -177,7 +182,7 @@ impl Application for Counter {
                 if self.operator == "/" {
                     self.value_int = value / next_value
                 };
-                self.operator += concat!("=");
+                self.equals_string += concat!("=");
             }
             Message::ClearPressed => {
                 self.any_operator = false;
@@ -185,6 +190,7 @@ impl Application for Counter {
                 self.value_int = 0;
                 self.value = "".to_string();
                 self.next_value = "".to_string();
+                self.equals_string = "".to_string();
             }
         }
 
@@ -201,6 +207,7 @@ impl Application for Counter {
                         .push(Text::new(self.value.to_string()).size(50))
                         .push(Text::new(self.operator.to_string()).size(50))
                         .push(Text::new(self.next_value.to_string()).size(50))
+                        .push(Text::new(self.equals_string.to_string()).size(50))
                         .push(Text::new(self.value_int.to_string()).size(50)),
                 )
                 .style(style_text_input::Container),
