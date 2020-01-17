@@ -113,11 +113,6 @@ impl Steps {
         Steps {
             steps: vec![
                 Step::Welcome,
-                Step::TextInput {
-                    value: String::new(),
-                    is_secure: false,
-                    state: text_input::State::new(),
-                },
                 Step::Calculator {
                     value: String::new(),
                     operator: String::new(),
@@ -128,6 +123,23 @@ impl Steps {
                     one_button: button::State::new(),
                     two_button: button::State::new(),
                     three_button: button::State::new(),
+                    four_button: button::State::new(),
+                    five_button: button::State::new(),
+                    six_button: button::State::new(),
+                    seven_button: button::State::new(),
+                    eight_button: button::State::new(),
+                    nine_button: button::State::new(),
+                    minus_button: button::State::new(),
+                    zero_button: button::State::new(),
+                    plus_button: button::State::new(),
+                    multiply_button: button::State::new(),
+                    divide_button: button::State::new(),
+                    clear_button: button::State::new(),
+                },
+                Step::TextInput {
+                    value: String::new(),
+                    is_secure: false,
+                    state: text_input::State::new(),
                 },
             ],
             current: 0,
@@ -170,11 +182,6 @@ impl Steps {
 enum Step {
     // see above vec
     Welcome,
-    TextInput {
-        value: String,
-        is_secure: bool,
-        state: text_input::State,
-    },
     Calculator {
         value: String,
         operator: String,
@@ -185,6 +192,23 @@ enum Step {
         one_button: button::State,
         two_button: button::State,
         three_button: button::State,
+        four_button: button::State,
+        five_button: button::State,
+        six_button: button::State,
+        seven_button: button::State,
+        eight_button: button::State,
+        nine_button: button::State,
+        minus_button: button::State,
+        zero_button: button::State,
+        plus_button: button::State,
+        multiply_button: button::State,
+        divide_button: button::State,
+        clear_button: button::State,
+    },
+    TextInput {
+        value: String,
+        is_secure: bool,
+        state: text_input::State,
     },
 }
 
@@ -198,6 +222,26 @@ pub enum StepMessage {
 impl<'a> Step {
     fn update(&mut self, msg: StepMessage) {
         match msg {
+            StepMessage::ButtonPressed(button, &mut any_operator, left_value, right_value) => {
+                if let Step::Calculator {
+                    value, next_value, ..
+                } = self
+                {
+                    println!("Button Clicked {} ", button);
+                    if !any_operator {
+                        println!("any_operator {} ", any_operator);
+                        *value = format!("{}{}", left_value, button);
+                    //*value += concat!("2")
+                    } else {
+                        println!("any_operator {} ", any_operator);
+                        *next_value = format!("{}{}", right_value, button);
+                        // *value += concat!("2")
+                    }
+                    if button == "-" {
+                        any_operator = true;
+                    }
+                }
+            }
             StepMessage::InputChanged(new_value) => {
                 if let Step::TextInput { value, .. } = self {
                     *value = new_value;
@@ -206,15 +250,6 @@ impl<'a> Step {
             StepMessage::ToggleSecureInput(toggle) => {
                 if let Step::TextInput { is_secure, .. } = self {
                     *is_secure = toggle;
-                }
-            }
-            StepMessage::ButtonPressed(button, any_operator, left_value, right_value) => {
-                if let Step::TextInput { value, .. } = self {
-                    if any_operator {
-                        *value = format!("{}{}", button, left_value);
-                    } else {
-                        *value = format!("{}{}", button, right_value);
-                    }
                 }
             }
         };
@@ -254,6 +289,18 @@ impl<'a> Step {
                 one_button,
                 two_button,
                 three_button,
+                four_button,
+                five_button,
+                six_button,
+                seven_button,
+                eight_button,
+                nine_button,
+                minus_button,
+                zero_button,
+                plus_button,
+                multiply_button,
+                divide_button,
+                clear_button,
             } => Self::calculator(
                 value,
                 operator,
@@ -264,6 +311,18 @@ impl<'a> Step {
                 one_button,
                 two_button,
                 three_button,
+                four_button,
+                five_button,
+                six_button,
+                seven_button,
+                eight_button,
+                nine_button,
+                minus_button,
+                zero_button,
+                plus_button,
+                multiply_button,
+                divide_button,
+                clear_button,
             ),
         }
         .into()
@@ -276,56 +335,13 @@ impl<'a> Step {
 
     fn welcome() -> Column<'a, StepMessage> {
         Self::container("Welcome!").push(Text::new(
-            "This is a simple Calculator \
-                 that can be easily implemented on top of Iced.",
+            "This is a simple Calculator that can be easily built with the Iced framework.",
         ))
     }
 
     // fn calculator() -> Column<'a, StepMessage> {
     //     Self::container("Calculator!").push(Text::new("Crypto Calculator"))
     // }
-
-    fn text_input(
-        value: &str,
-        is_secure: bool,
-        state: &'a mut text_input::State,
-    ) -> Column<'a, StepMessage> {
-        let text_input = TextInput::new(
-            state,
-            "Type something to continue...",
-            value,
-            StepMessage::InputChanged,
-        )
-        .padding(10)
-        .size(30);
-        Self::container("Text input")
-            .push(Text::new(
-                "Use a text input to ask for different kinds of information.",
-            ))
-            .push(if is_secure {
-                text_input.password()
-            } else {
-                text_input
-            })
-            .push(Checkbox::new(
-                is_secure,
-                "Enable password mode",
-                StepMessage::ToggleSecureInput,
-            ))
-            .push(Text::new(
-                "A text input produces a message every time it changes. It is \
-                 very easy to keep track of its contents:",
-            ))
-            .push(
-                Text::new(if value.is_empty() {
-                    "You have not typed anything yet..."
-                } else {
-                    value
-                })
-                .width(Length::Fill)
-                .horizontal_alignment(HorizontalAlignment::Center),
-            )
-    }
 
     fn calculator(
         value: &str,
@@ -337,8 +353,20 @@ impl<'a> Step {
         one_button: &'a mut button::State,
         two_button: &'a mut button::State,
         three_button: &'a mut button::State,
+        four_button: &'a mut button::State,
+        five_button: &'a mut button::State,
+        six_button: &'a mut button::State,
+        seven_button: &'a mut button::State,
+        eight_button: &'a mut button::State,
+        nine_button: &'a mut button::State,
+        minus_button: &'a mut button::State,
+        zero_button: &'a mut button::State,
+        plus_button: &'a mut button::State,
+        multiply_button: &'a mut button::State,
+        divide_button: &'a mut button::State,
+        clear_button: &'a mut button::State,
     ) -> Column<'a, StepMessage> {
-        Self::container("Calculator!")
+        Self::container("Crypto Quick")
             .push(Text::new("Crypto Calculator"))
             .push(
                 Container::new(
@@ -383,7 +411,7 @@ impl<'a> Step {
                                     .horizontal_alignment(HorizontalAlignment::Center),
                             )
                             .on_press(StepMessage::ButtonPressed(
-                                "1".to_owned(),
+                                "2".to_owned(),
                                 any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
@@ -399,7 +427,7 @@ impl<'a> Step {
                                     .horizontal_alignment(HorizontalAlignment::Center),
                             )
                             .on_press(StepMessage::ButtonPressed(
-                                "1".to_owned(),
+                                "3".to_owned(),
                                 any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
@@ -409,6 +437,276 @@ impl<'a> Step {
                         ),
                 )
                 .style(style_action_nav::Container),
+            )
+            .push(
+                Container::new(
+                    Row::new()
+                        .align_items(Align::Start)
+                        .spacing(10)
+                        .push(
+                            Button::new(
+                                four_button,
+                                Text::new("4")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center)
+                                    .vertical_alignment(VerticalAlignment::Top),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "4".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        )
+                        .push(
+                            Button::new(
+                                five_button,
+                                Text::new("5")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "5".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        )
+                        .push(
+                            Button::new(
+                                six_button,
+                                Text::new("6")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "6".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        ),
+                )
+                .style(style_action_nav::Container),
+            )
+            .push(
+                Container::new(
+                    Row::new()
+                        .align_items(Align::Start)
+                        .spacing(10)
+                        .push(
+                            Button::new(
+                                seven_button,
+                                Text::new("7")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center)
+                                    .vertical_alignment(VerticalAlignment::Top),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "7".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        )
+                        .push(
+                            Button::new(
+                                eight_button,
+                                Text::new("8")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "8".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        )
+                        .push(
+                            Button::new(
+                                nine_button,
+                                Text::new("9")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "9".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        ),
+                )
+                .style(style_action_nav::Container),
+            )
+            .push(
+                Container::new(
+                    Row::new()
+                        .align_items(Align::Start)
+                        .spacing(10)
+                        .push(
+                            Button::new(
+                                minus_button,
+                                Text::new("-")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center)
+                                    .vertical_alignment(VerticalAlignment::Top),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "-".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        )
+                        .push(
+                            Button::new(
+                                zero_button,
+                                Text::new("0")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "0".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        )
+                        .push(
+                            Button::new(
+                                plus_button,
+                                Text::new("+")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "+".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        ),
+                )
+                .style(style_action_nav::Container),
+            )
+            .push(
+                Container::new(
+                    Row::new()
+                        .align_items(Align::Start)
+                        .spacing(10)
+                        .push(
+                            Button::new(
+                                multiply_button,
+                                Text::new("*")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center)
+                                    .vertical_alignment(VerticalAlignment::Top),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "*".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        )
+                        .push(
+                            Button::new(
+                                divide_button,
+                                Text::new("/")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "0".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        )
+                        .push(
+                            Button::new(
+                                clear_button,
+                                Text::new("Clr")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "Clr".to_owned(),
+                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        ),
+                )
+                .style(style_action_nav::Container),
+            )
+    }
+
+    fn text_input(
+        value: &str,
+        is_secure: bool,
+        state: &'a mut text_input::State,
+    ) -> Column<'a, StepMessage> {
+        let text_input = TextInput::new(
+            state,
+            "Type something to continue...",
+            value,
+            StepMessage::InputChanged,
+        )
+        .padding(10)
+        .size(30);
+        Self::container("Text input")
+            .push(Text::new(
+                "Use a text input to ask for different kinds of information.",
+            ))
+            .push(if is_secure {
+                text_input.password()
+            } else {
+                text_input
+            })
+            .push(Checkbox::new(
+                is_secure,
+                "Enable password mode",
+                StepMessage::ToggleSecureInput,
+            ))
+            .push(Text::new(
+                "A text input produces a message every time it changes. It is \
+                 very easy to keep track of its contents:",
+            ))
+            .push(
+                Text::new(if value.is_empty() {
+                    "You have not typed anything yet..."
+                } else {
+                    value
+                })
+                .width(Length::Fill)
+                .horizontal_alignment(HorizontalAlignment::Center),
             )
     }
 }
