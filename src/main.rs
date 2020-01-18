@@ -134,6 +134,7 @@ impl Steps {
                     plus_button: button::State::new(),
                     multiply_button: button::State::new(),
                     divide_button: button::State::new(),
+                    equals_button: button::State::new(),
                     clear_button: button::State::new(),
                 },
                 Step::TextInput {
@@ -203,6 +204,7 @@ enum Step {
         plus_button: button::State,
         multiply_button: button::State,
         divide_button: button::State,
+        equals_button: button::State,
         clear_button: button::State,
     },
     TextInput {
@@ -216,29 +218,61 @@ enum Step {
 pub enum StepMessage {
     InputChanged(String),
     ToggleSecureInput(bool),
-    ButtonPressed(String, bool, String, String),
+    ButtonPressed(String, String, String),
 }
 
 impl<'a> Step {
     fn update(&mut self, msg: StepMessage) {
         match msg {
-            StepMessage::ButtonPressed(button, &mut any_operator, left_value, right_value) => {
+            StepMessage::ButtonPressed(button, left_value, right_value) => {
                 if let Step::Calculator {
-                    value, next_value, ..
+                    value,
+                    operator,
+                    next_value,
+                    any_operator,
+                    equals_string,
+                    value_int,
+                    ..
                 } = self
                 {
                     println!("Button Clicked {} ", button);
-                    if !any_operator {
-                        println!("any_operator {} ", any_operator);
+                    if any_operator == &false {
+                        println!("any_operator should be false ? {} ", any_operator);
                         *value = format!("{}{}", left_value, button);
-                    //*value += concat!("2")
+                        println!("value {} ", value);
                     } else {
-                        println!("any_operator {} ", any_operator);
+                        println!("any_operator  is true ? {} ", any_operator);
                         *next_value = format!("{}{}", right_value, button);
-                        // *value += concat!("2")
+                        println!("next_value {} ", next_value);
                     }
-                    if button == "-" {
-                        any_operator = true;
+                    if button == "=" {
+                        println!("value  is  ? {} ", value);
+                        println!("next_value  is  ? {} ", next_value);
+                        let value: i32 = value.parse().unwrap();
+                        let next_value: i32 = next_value.parse().unwrap();
+                        if operator == "+" {
+                            *value_int = value + next_value
+                        }
+                        if operator == "-" {
+                            *value_int = value - next_value
+                        }
+                        if operator == "*" {
+                            *value_int = value * next_value
+                        }
+                        if operator == "/" {
+                            *value_int = value / next_value
+                        }
+                    }
+                    if button == "-" || button == "+" || button == "*" || button == "/" {
+                        *any_operator = true;
+                        *operator = button.to_string();
+                    }
+                    if button == "Clr" {
+                        *equals_string = "".to_string();
+                        *operator = "".to_string();
+                        *value = "".to_string();
+                        *next_value = "".to_string();
+                        *value_int = 0;
                     }
                 }
             }
@@ -300,6 +334,7 @@ impl<'a> Step {
                 plus_button,
                 multiply_button,
                 divide_button,
+                equals_button,
                 clear_button,
             } => Self::calculator(
                 value,
@@ -322,6 +357,7 @@ impl<'a> Step {
                 plus_button,
                 multiply_button,
                 divide_button,
+                equals_button,
                 clear_button,
             ),
         }
@@ -364,10 +400,12 @@ impl<'a> Step {
         plus_button: &'a mut button::State,
         multiply_button: &'a mut button::State,
         divide_button: &'a mut button::State,
+        equals_button: &'a mut button::State,
         clear_button: &'a mut button::State,
     ) -> Column<'a, StepMessage> {
         Self::container("Crypto Quick")
-            .push(Text::new("Crypto Calculator"))
+            .push(Text::new("Crypto Calculator "))
+            .push(Text::new(any_operator.to_string()))
             .push(
                 Container::new(
                     Row::new()
@@ -396,7 +434,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "1".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -412,7 +449,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "2".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -428,7 +464,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "3".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -453,7 +488,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "4".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -469,7 +503,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "5".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -485,7 +518,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "6".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -510,7 +542,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "7".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -526,7 +557,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "8".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -542,7 +572,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "9".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -567,7 +596,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "-".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -583,7 +611,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "0".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -599,7 +626,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "+".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -624,7 +650,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "*".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -640,7 +665,21 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "0".to_owned(),
-                                any_operator,
+                                value.to_owned(),
+                                next_value.to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        )
+                        .push(
+                            Button::new(
+                                equals_button,
+                                Text::new("=")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            .on_press(StepMessage::ButtonPressed(
+                                "=".to_owned(),
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -656,7 +695,6 @@ impl<'a> Step {
                             )
                             .on_press(StepMessage::ButtonPressed(
                                 "Clr".to_owned(),
-                                any_operator,
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
