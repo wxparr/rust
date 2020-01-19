@@ -1,6 +1,6 @@
 use iced::{
     button, scrollable, text_input, Align, Button, Checkbox, Color, Column, Container, Element,
-    HorizontalAlignment, Length, Row, Sandbox, Scrollable, Settings, Space, Text, TextInput,
+    HorizontalAlignment, Image, Length, Row, Sandbox, Scrollable, Settings, Space, Text, TextInput,
     VerticalAlignment,
 };
 
@@ -113,6 +113,16 @@ impl Steps {
         Steps {
             steps: vec![
                 Step::Welcome,
+                Step::RowsAndColumns {
+                    layout: Layout::Row,
+                    //spacing_slider: slider::State::new(),
+                    spacing: 20,
+                },
+                Step::TextInput {
+                    value: String::new(),
+                    is_secure: false,
+                    state: text_input::State::new(),
+                },
                 Step::Calculator {
                     value: String::new(),
                     operator: String::new(),
@@ -136,11 +146,6 @@ impl Steps {
                     divide_button: button::State::new(),
                     equals_button: button::State::new(),
                     clear_button: button::State::new(),
-                },
-                Step::TextInput {
-                    value: String::new(),
-                    is_secure: false,
-                    state: text_input::State::new(),
                 },
             ],
             current: 0,
@@ -183,6 +188,16 @@ impl Steps {
 enum Step {
     // see above vec
     Welcome,
+    RowsAndColumns {
+        layout: Layout,
+        // spacing_slider: slider::State,
+        spacing: u16,
+    },
+    TextInput {
+        value: String,
+        is_secure: bool,
+        state: text_input::State,
+    },
     Calculator {
         value: String,
         operator: String,
@@ -207,23 +222,41 @@ enum Step {
         equals_button: button::State,
         clear_button: button::State,
     },
-    TextInput {
-        value: String,
-        is_secure: bool,
-        state: text_input::State,
-    },
 }
 
 #[derive(Debug, Clone)]
 pub enum StepMessage {
     InputChanged(String),
     ToggleSecureInput(bool),
+    // LanguageSelected(Language),
+    LayoutChanged(Layout),
+    SpacingChanged(f32),
     ButtonPressed(String, String, String),
 }
 
 impl<'a> Step {
     fn update(&mut self, msg: StepMessage) {
         match msg {
+            // StepMessage::LanguageSelected(language) => {
+            //     if let Step::Inbox { selection } = self {
+            //         *selection = Some(language);
+            //     }
+            // }
+            StepMessage::ToggleSecureInput(toggle) => {
+                if let Step::TextInput { is_secure, .. } = self {
+                    *is_secure = toggle;
+                }
+            }
+            StepMessage::LayoutChanged(new_layout) => {
+                if let Step::RowsAndColumns { layout, .. } = self {
+                    *layout = new_layout;
+                }
+            }
+            StepMessage::SpacingChanged(new_spacing) => {
+                if let Step::RowsAndColumns { spacing, .. } = self {
+                    *spacing = new_spacing.round() as u16;
+                }
+            }
             StepMessage::ButtonPressed(button, left_value, right_value) => {
                 if let Step::Calculator {
                     value,
@@ -236,36 +269,49 @@ impl<'a> Step {
                 } = self
                 {
                     println!("Button Clicked {} ", button);
-                    if any_operator == &false {
+                    if any_operator == &false
+                        && button != "+"
+                        && button != "-"
+                        && button != "*"
+                        && button != "/"
+                    {
                         println!("any_operator should be false ? {} ", any_operator);
                         *value = format!("{}{}", left_value, button);
                         println!("value {} ", value);
-                    } else {
+                    }
+                    if any_operator == &true
+                        && button != "+"
+                        && button != "-"
+                        && button != "="
+                        && button != "*"
+                        && button != "/"
+                    {
                         println!("any_operator  is true ? {} ", any_operator);
                         *next_value = format!("{}{}", right_value, button);
                         println!("next_value {} ", next_value);
                     }
+                    if button == "-" || button == "+" || button == "*" || button == "/" {
+                        *any_operator = true;
+                        *operator = button.to_string();
+                    } else {
+                        //*operator = "".to_string();
+                    }
                     if button == "=" {
-                        println!("value  is  ? {} ", value);
-                        println!("next_value  is  ? {} ", next_value);
+                        *any_operator = false;
+                        *equals_string = "=".to_string();
                         let value: i32 = value.parse().unwrap();
                         let next_value: i32 = next_value.parse().unwrap();
                         if operator == "+" {
                             *value_int = value + next_value
-                        }
-                        if operator == "-" {
+                        } else if operator == "-" {
                             *value_int = value - next_value
-                        }
-                        if operator == "*" {
+                        } else if operator == "*" {
                             *value_int = value * next_value
-                        }
-                        if operator == "/" {
+                        } else if operator == "/" {
                             *value_int = value / next_value
+                        } else {
+                            *value_int = value + next_value
                         }
-                    }
-                    if button == "-" || button == "+" || button == "*" || button == "/" {
-                        *any_operator = true;
-                        *operator = button.to_string();
                     }
                     if button == "Clr" {
                         *equals_string = "".to_string();
@@ -281,18 +327,14 @@ impl<'a> Step {
                     *value = new_value;
                 }
             }
-            StepMessage::ToggleSecureInput(toggle) => {
-                if let Step::TextInput { is_secure, .. } = self {
-                    *is_secure = toggle;
-                }
-            }
         };
     }
 
     fn title(&self) -> &str {
         match self {
             Step::Welcome => "Welcome",
-            Step::TextInput { .. } => "Text input",
+            Step::RowsAndColumns { .. } => "Rows and columns",
+            Step::TextInput { .. } => "Search Input",
             Step::Calculator { .. } => "Crypto Calculator",
         }
     }
@@ -300,14 +342,20 @@ impl<'a> Step {
     fn can_continue(&self) -> bool {
         match self {
             Step::Welcome => true,
-            Step::TextInput { value, .. } => !value.is_empty(),
-            Step::Calculator { value, .. } => !value.is_empty(),
+            Step::RowsAndColumns { .. } => true,
+            Step::TextInput { .. } => true,
+            Step::Calculator { value, .. } => value.is_empty(),
         }
     }
 
     fn view(&mut self) -> Element<StepMessage> {
         match self {
             Step::Welcome => Self::welcome(),
+            Step::RowsAndColumns {
+                layout,
+                //spacing_slider,
+                spacing,
+            } => Self::rows_and_columns(*layout, *spacing),
             Step::TextInput {
                 value,
                 is_secure,
@@ -365,19 +413,117 @@ impl<'a> Step {
     }
 
     // this is a re-usable container
+    // fn inbox_container(title: &str) -> Row<'a, StepMessage> {
+    //     Row::new().spacing(15).push(Text::new(title).size(40))
+    // }
+
     fn container(title: &str) -> Column<'a, StepMessage> {
-        Column::new().spacing(20).push(Text::new(title).size(50))
+        Column::new().spacing(20).push(Text::new(title).size(40))
     }
 
     fn welcome() -> Column<'a, StepMessage> {
-        Self::container("Welcome!").push(Text::new(
-            "This is a simple Calculator that can be easily built with the Iced framework.",
-        ))
+        Self::container("Crypto Quick!")
+            .push(Text::new(
+                "Bankless Crytpo Accounting that is quick and easy to use.",
+            ))
+            .push(Image::new("resources/accounting-1.jpg"))
     }
 
-    // fn calculator() -> Column<'a, StepMessage> {
-    //     Self::container("Calculator!").push(Text::new("Crypto Calculator"))
-    // }
+    fn rows_and_columns(
+        layout: Layout,
+        //spacing_slider: &'a mut slider::State,
+        spacing: u16,
+    ) -> Column<'a, StepMessage> {
+        //let row_radio = Radio::new(Layout::Row, "Row", Some(layout), StepMessage::LayoutChanged);
+        let all = ["Inbox", "Folders", "Tags", "Sent", "Spam", "Trash"];
+        let question = Column::new().padding(10).spacing(5).push(
+            all.iter()
+                .fold(Column::new().padding(5).spacing(10), |choices, language| {
+                    choices.push(Text::new(language.to_string()))
+                }),
+        );
+
+        let email_list = [
+            "This is an email message you need to click and read",
+            "This is an email message you need to click and read",
+            "This is an email message you need to click and read",
+            "This is an email message you need to click and read",
+            "This is an email message you need to click and read",
+            "This is an email message you need to click and read",
+        ];
+
+        let is_secure = true;
+        let email_row = Column::new()
+            .padding(10)
+            .spacing(5)
+            .push(email_list.iter().fold(
+                Column::new().padding(5).spacing(10),
+                |choices, language| {
+                    choices.push(Checkbox::new(
+                        is_secure,
+                        language,
+                        StepMessage::ToggleSecureInput,
+                    ))
+                },
+            ));
+        // let email_row = Checkbox::new(
+        //     is_secure,
+        //     "This is an email message you need to click and read",
+        //     StepMessage::ToggleSecureInput,
+        // );
+
+        let layout_section: Element<_> = match layout {
+            Layout::Row => Row::new()
+                .spacing(spacing)
+                //.push(row_radio)
+                .push(question)
+                .push(email_row)
+                .into(),
+
+            Layout::Column => Column::new()
+                .spacing(100)
+                .push(question)
+                //.push(column_radio)
+                .into(),
+        };
+
+        Self::container("Inbox View")
+            .spacing(80)
+            .push(layout_section)
+    }
+
+    fn text_input(
+        value: &str,
+        is_secure: bool,
+        state: &'a mut text_input::State,
+    ) -> Column<'a, StepMessage> {
+        let text_input =
+            TextInput::new(state, "Type to search...", value, StepMessage::InputChanged)
+                .padding(10)
+                .size(30);
+        Self::container("Text input")
+            .push(Text::new("Search for the Crypto Market Rates."))
+            .push(if is_secure {
+                text_input.password()
+            } else {
+                text_input
+            })
+            .push(Checkbox::new(
+                is_secure,
+                "Enable password mode",
+                StepMessage::ToggleSecureInput,
+            ))
+            .push(Text::new("See the results below:"))
+            .push(
+                Text::new(if value.is_empty() {
+                    "You have not typed anything yet..."
+                } else {
+                    value
+                })
+                .width(Length::Fill)
+                .horizontal_alignment(HorizontalAlignment::Center),
+            )
+    }
 
     fn calculator(
         value: &str,
@@ -664,7 +810,7 @@ impl<'a> Step {
                                     .horizontal_alignment(HorizontalAlignment::Center),
                             )
                             .on_press(StepMessage::ButtonPressed(
-                                "0".to_owned(),
+                                "/".to_owned(),
                                 value.to_owned(),
                                 next_value.to_owned(),
                             ))
@@ -705,48 +851,6 @@ impl<'a> Step {
                 .style(style_action_nav::Container),
             )
     }
-
-    fn text_input(
-        value: &str,
-        is_secure: bool,
-        state: &'a mut text_input::State,
-    ) -> Column<'a, StepMessage> {
-        let text_input = TextInput::new(
-            state,
-            "Type something to continue...",
-            value,
-            StepMessage::InputChanged,
-        )
-        .padding(10)
-        .size(30);
-        Self::container("Text input")
-            .push(Text::new(
-                "Use a text input to ask for different kinds of information.",
-            ))
-            .push(if is_secure {
-                text_input.password()
-            } else {
-                text_input
-            })
-            .push(Checkbox::new(
-                is_secure,
-                "Enable password mode",
-                StepMessage::ToggleSecureInput,
-            ))
-            .push(Text::new(
-                "A text input produces a message every time it changes. It is \
-                 very easy to keep track of its contents:",
-            ))
-            .push(
-                Text::new(if value.is_empty() {
-                    "You have not typed anything yet..."
-                } else {
-                    value
-                })
-                .width(Length::Fill)
-                .horizontal_alignment(HorizontalAlignment::Center),
-            )
-    }
 }
 
 fn button<'a, Message>(state: &'a mut button::State, label: &str) -> Button<'a, Message> {
@@ -768,6 +872,42 @@ fn primary_button<'a, Message>(state: &'a mut button::State, label: &str) -> But
 fn secondary_button<'a, Message>(state: &'a mut button::State, label: &str) -> Button<'a, Message> {
     button(state, label)
 }
+
+// #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+// pub enum Language {
+//     Inbox,
+//     Folders,
+//     Tags,
+//     Sent,
+//     Spam,
+//     Trash,
+// }
+
+// impl Language {
+//     fn all() -> [Language; 6] {
+//         [
+//             Language::Inbox,
+//             Language::Folders,
+//             Language::Tags,
+//             Language::Sent,
+//             Language::Spam,
+//             Language::Trash,
+//         ]
+//     }
+// }
+
+// impl From<Language> for &str {
+//     fn from(language: Language) -> &'static str {
+//         match language {
+//             Language::Inbox => "Inbox",
+//             Language::Folders => "Folders",
+//             Language::Tags => "Tags",
+//             Language::Sent => "Sent",
+//             Language::Spam => "Spam",
+//             Language::Trash => "Trash",
+//         }
+//     }
+// }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Layout {
