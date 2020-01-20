@@ -1,8 +1,10 @@
 use iced::{
     button, scrollable, text_input, Align, Button, Checkbox, Color, Column, Container, Element,
-    HorizontalAlignment, Image, Length, Row, Sandbox, Scrollable, Settings, Space, Text, TextInput,
-    VerticalAlignment,
+    Font, HorizontalAlignment, Image, Length, Row, Sandbox, Scrollable, Settings, Space, Text,
+    TextInput, VerticalAlignment,
 };
+
+use serde::{Deserialize, Serialize};
 
 pub fn main() {
     env_logger::init();
@@ -118,11 +120,11 @@ impl Steps {
                     spacing: 20,
                     value: String::new(),
                     inbox_button: button::State::new(),
-                    // folders_button: button::State::new(),
-                    // tags_button: button::State::new(),
-                    // sent_button: button::State::new(),
-                    // spam_button: button::State::new(),
-                    // trash_button: button::State::new(),
+                    folders_button: button::State::new(),
+                    tags_button: button::State::new(),
+                    sent_button: button::State::new(),
+                    spam_button: button::State::new(),
+                    trash_button: button::State::new(),
                 },
                 Step::TextInput {
                     value: String::new(),
@@ -199,11 +201,11 @@ enum Step {
         spacing: u16,
         value: String,
         inbox_button: button::State,
-        // folders_button: button::State,
-        // tags_button: button::State,
-        // sent_button: button::State,
-        // spam_button: button::State,
-        // trash_button: button::State,
+        folders_button: button::State,
+        tags_button: button::State,
+        sent_button: button::State,
+        spam_button: button::State,
+        trash_button: button::State,
     },
     TextInput {
         value: String,
@@ -240,21 +242,15 @@ enum Step {
 pub enum StepMessage {
     InputChanged(String),
     ToggleSecureInput(bool),
-    // LanguageSelected(Language),
     LayoutChanged(Layout),
     SpacingChanged(f32),
     ButtonPressed(String, String, String),
-    NavButtonPressed(String, String, String),
+    NavButtonPressed(String),
 }
 
 impl<'a> Step {
     fn update(&mut self, msg: StepMessage) {
         match msg {
-            // StepMessage::LanguageSelected(language) => {
-            //     if let Step::Inbox { selection } = self {
-            //         *selection = Some(language);
-            //     }
-            // }
             StepMessage::ToggleSecureInput(toggle) => {
                 if let Step::TextInput { is_secure, .. } = self {
                     *is_secure = toggle;
@@ -270,9 +266,10 @@ impl<'a> Step {
                     *spacing = new_spacing.round() as u16;
                 }
             }
-            StepMessage::NavButtonPressed(button, left_value, right_value) => {
-                if let Step::Calculator { value, .. } = self {
+            StepMessage::NavButtonPressed(button) => {
+                if let Step::RowsAndColumns { value, .. } = self {
                     println!("value  LOAD CONTENT ? {} ", value);
+                    println!("value  LOAD CONTENT ? {} ", button);
                 }
             }
             StepMessage::ButtonPressed(button, left_value, right_value) => {
@@ -374,21 +371,21 @@ impl<'a> Step {
                 spacing,
                 value,
                 inbox_button,
-                // folders_button,
-                // tags_button,
-                // sent_button,
-                // spam_button,
-                // trash_button,
+                folders_button,
+                tags_button,
+                sent_button,
+                spam_button,
+                trash_button,
             } => Self::rows_and_columns(
                 *layout,
                 *spacing,
-                *value,
+                value.to_string(),
                 inbox_button,
-                // folders_button,
-                // tags_button,
-                // sent_button,
-                // spam_button,
-                // trash_button,
+                folders_button,
+                tags_button,
+                sent_button,
+                spam_button,
+                trash_button,
             ),
             Step::TextInput {
                 value,
@@ -466,49 +463,94 @@ impl<'a> Step {
     fn rows_and_columns(
         layout: Layout,
         spacing: u16,
-        value: String,
+        _value: String,
         inbox_button: &'a mut button::State,
-        // folders_button: &mut button::State,
-        // tags_button: &mut button::State,
-        // sent_button: &mut button::State,
-        // spam_button: &mut button::State,
-        // trash_button: &mut button::State,
+        folders_button: &'a mut button::State,
+        tags_button: &'a mut button::State,
+        sent_button: &'a mut button::State,
+        spam_button: &'a mut button::State,
+        trash_button: &'a mut button::State,
     ) -> Column<'a, StepMessage> {
-        //let row_radio = Radio::new(Layout::Row, "Row", Some(layout), StepMessage::LayoutChanged);
-        let all = ["Inbox", "Folders", "Tags", "Sent", "Spam", "Trash"];
-        let buttons = [
-            inbox_button,
-            // folders_button,
-            // tags_button,
-            // sent_button,
-            // spam_button,
-            // trash_button,
-        ];
-
         let question = Column::new()
             .padding(10)
             .spacing(5)
             .push(
-                buttons
-                    .iter()
-                    .fold(Column::new().padding(5).spacing(10), |choices, button| {
-                        choices.push(
-                            //Text::new(language.to_string())
-                            Button::new(
-                                button,
-                                Text::new("inbox")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center),
-                            )
-                            .on_press(StepMessage::NavButtonPressed(
-                                "1".to_owned(),
-                                value.to_owned(),
-                                "test".to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        )
-                    }),
+                Button::new(
+                    inbox_button,
+                    Text::new("inbox")
+                        .color(Color::BLACK)
+                        .horizontal_alignment(HorizontalAlignment::Center)
+                        .vertical_alignment(VerticalAlignment::Top),
+                )
+                .on_press(StepMessage::NavButtonPressed("inbox".to_owned()))
+                .padding(3)
+                .min_width(50)
+                .style(style::Button::Icon),
+            )
+            .push(
+                Button::new(
+                    folders_button,
+                    Text::new("folders")
+                        .color(Color::BLACK)
+                        .horizontal_alignment(HorizontalAlignment::Center)
+                        .vertical_alignment(VerticalAlignment::Top),
+                )
+                .on_press(StepMessage::NavButtonPressed("folders".to_owned()))
+                .padding(3)
+                .min_width(50)
+                .style(style::Button::Icon),
+            )
+            .push(
+                Button::new(
+                    tags_button,
+                    Text::new("tags")
+                        .color(Color::BLACK)
+                        .horizontal_alignment(HorizontalAlignment::Center)
+                        .vertical_alignment(VerticalAlignment::Top),
+                )
+                .on_press(StepMessage::NavButtonPressed("tags".to_owned()))
+                .padding(3)
+                .min_width(50)
+                .style(style::Button::Icon),
+            )
+            .push(
+                Button::new(
+                    sent_button,
+                    Text::new("sent")
+                        .color(Color::BLACK)
+                        .horizontal_alignment(HorizontalAlignment::Center)
+                        .vertical_alignment(VerticalAlignment::Top),
+                )
+                .on_press(StepMessage::NavButtonPressed("sent".to_owned()))
+                .padding(3)
+                .min_width(50)
+                .style(style::Button::Icon),
+            )
+            .push(
+                Button::new(
+                    spam_button,
+                    Text::new("spam")
+                        .color(Color::BLACK)
+                        .horizontal_alignment(HorizontalAlignment::Center)
+                        .vertical_alignment(VerticalAlignment::Top),
+                )
+                .on_press(StepMessage::NavButtonPressed("spam".to_owned()))
+                .padding(3)
+                .min_width(50)
+                .style(style::Button::Icon),
+            )
+            .push(
+                Button::new(
+                    trash_button,
+                    Text::new("trash")
+                        .color(Color::BLACK)
+                        .horizontal_alignment(HorizontalAlignment::Center)
+                        .vertical_alignment(VerticalAlignment::Top),
+                )
+                .on_press(StepMessage::NavButtonPressed("trash".to_owned()))
+                .padding(3)
+                .min_width(50)
+                .style(style::Button::Icon),
             );
 
         let email_list = [
@@ -534,11 +576,6 @@ impl<'a> Step {
                     ))
                 },
             ));
-        // let email_row = Checkbox::new(
-        //     is_secure,
-        //     "This is an email message you need to click and read",
-        //     StepMessage::ToggleSecureInput,
-        // );
 
         let layout_section: Element<_> = match layout {
             Layout::Row => Row::new()
@@ -1069,6 +1106,130 @@ mod style_main {
                 border_color: Color::WHITE,
                 border_width: 2,
                 text_color: Some(Color::WHITE),
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Filter {
+    All,
+    Active,
+    Completed,
+}
+
+// impl Default for Filter {
+//     fn default() -> Self {
+//         Filter::All
+//     }
+// }
+
+// impl Filter {
+//     fn matches(&self, task: &Task) -> bool {
+//         match self {
+//             Filter::All => true,
+//             Filter::Active => !task.completed,
+//             Filter::Completed => task.completed,
+//         }
+//     }
+// }
+
+// fn loading_message() -> Element<'static, Message> {
+//     Container::new(
+//         Text::new("Loading...")
+//             .horizontal_alignment(HorizontalAlignment::Center)
+//             .size(50),
+//     )
+//     .width(Length::Fill)
+//     .height(Length::Fill)
+//     .center_y()
+//     .into()
+// }
+
+// fn empty_message(message: &str) -> Element<'static, Message> {
+//     Container::new(
+//         Text::new(message)
+//             .size(25)
+//             .horizontal_alignment(HorizontalAlignment::Center)
+//             .color([0.7, 0.7, 0.7]),
+//     )
+//     .width(Length::Fill)
+//     .height(Length::Units(200))
+//     .center_y()
+//     .into()
+// }
+
+// Fonts
+const ICONS: Font = Font::External {
+    name: "Icons",
+    bytes: include_bytes!("../resources/fuzzynet.png"),
+};
+
+fn icon(unicode: char) -> Text {
+    Text::new(&unicode.to_string())
+        .font(ICONS)
+        .width(Length::Units(20))
+        .horizontal_alignment(HorizontalAlignment::Center)
+        .size(20)
+}
+
+fn edit_icon() -> Text {
+    icon('\u{F303}')
+}
+
+fn delete_icon() -> Text {
+    icon('\u{F1F8}')
+}
+
+mod style {
+    use iced::{button, Background, Color, Vector};
+
+    pub enum Button {
+        Filter { selected: bool },
+        Icon,
+        Destructive,
+    }
+
+    impl button::StyleSheet for Button {
+        fn active(&self) -> button::Style {
+            match self {
+                Button::Filter { selected } => {
+                    if *selected {
+                        button::Style {
+                            background: Some(Background::Color(Color::from_rgb(0.2, 0.2, 0.7))),
+                            border_radius: 10,
+                            text_color: Color::WHITE,
+                            ..button::Style::default()
+                        }
+                    } else {
+                        button::Style::default()
+                    }
+                }
+                Button::Icon => button::Style {
+                    text_color: Color::from_rgb(0.5, 0.5, 0.5),
+                    ..button::Style::default()
+                },
+                Button::Destructive => button::Style {
+                    background: Some(Background::Color(Color::from_rgb(0.8, 0.2, 0.2))),
+                    border_radius: 5,
+                    text_color: Color::WHITE,
+                    shadow_offset: Vector::new(1.0, 1.0),
+                    ..button::Style::default()
+                },
+            }
+        }
+
+        fn hovered(&self) -> button::Style {
+            let active = self.active();
+
+            button::Style {
+                text_color: match self {
+                    Button::Icon => Color::from_rgb(0.2, 0.2, 0.7),
+                    Button::Filter { selected } if !selected => Color::from_rgb(0.2, 0.2, 0.7),
+                    _ => active.text_color,
+                },
+                shadow_offset: active.shadow_offset + Vector::new(0.0, 1.0),
+                ..active
             }
         }
     }
