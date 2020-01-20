@@ -268,6 +268,7 @@ impl<'a> Step {
             }
             StepMessage::NavButtonPressed(button) => {
                 if let Step::RowsAndColumns { value, .. } = self {
+                    *value = format!("{}{}", value, button);
                     println!("value  LOAD CONTENT ? {} ", value);
                     println!("value  LOAD CONTENT ? {} ", button);
                 }
@@ -463,7 +464,7 @@ impl<'a> Step {
     fn rows_and_columns(
         layout: Layout,
         spacing: u16,
-        _value: String,
+        value: String,
         inbox_button: &'a mut button::State,
         folders_button: &'a mut button::State,
         tags_button: &'a mut button::State,
@@ -577,12 +578,38 @@ impl<'a> Step {
                 },
             ));
 
+        let folders_list = ["my folder", "your folder", "his folder"];
+        let foleders_content = Column::new()
+            .padding(10)
+            .spacing(5)
+            .push(folders_list.iter().fold(
+                Column::new().padding(5).spacing(10),
+                |choices, language| {
+                    choices.push(Checkbox::new(
+                        is_secure,
+                        language,
+                        StepMessage::ToggleSecureInput,
+                    ))
+                },
+            ));
+        pub enum Content {
+            Inbox  { value: String  },
+            Folders,
+            Tags,
+            Sent,
+            Spam,
+            Trash,
+        }
+
         let layout_section: Element<_> = match layout {
             Layout::Row => Row::new()
-                .spacing(spacing)
-                //.push(row_radio)
+                .spacing(5)
                 .push(question)
-                .push(email_row)
+                .push(
+                    match &value {
+                        Content::Inbox { &value } => email_row,
+                        Content::Folders { &value } => foleders_content,
+                )
                 .into(),
 
             Layout::Column => Column::new()
@@ -977,42 +1004,6 @@ fn primary_button<'a, Message>(state: &'a mut button::State, label: &str) -> But
 fn secondary_button<'a, Message>(state: &'a mut button::State, label: &str) -> Button<'a, Message> {
     button(state, label)
 }
-
-// #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-// pub enum Language {
-//     Inbox,
-//     Folders,
-//     Tags,
-//     Sent,
-//     Spam,
-//     Trash,
-// }
-
-// impl Language {
-//     fn all() -> [Language; 6] {
-//         [
-//             Language::Inbox,
-//             Language::Folders,
-//             Language::Tags,
-//             Language::Sent,
-//             Language::Spam,
-//             Language::Trash,
-//         ]
-//     }
-// }
-
-// impl From<Language> for &str {
-//     fn from(language: Language) -> &'static str {
-//         match language {
-//             Language::Inbox => "Inbox",
-//             Language::Folders => "Folders",
-//             Language::Tags => "Tags",
-//             Language::Sent => "Sent",
-//             Language::Spam => "Spam",
-//             Language::Trash => "Trash",
-//         }
-//     }
-// }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Layout {
