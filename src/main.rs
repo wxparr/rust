@@ -115,8 +115,14 @@ impl Steps {
                 Step::Welcome,
                 Step::RowsAndColumns {
                     layout: Layout::Row,
-                    //spacing_slider: slider::State::new(),
                     spacing: 20,
+                    value: String::new(),
+                    inbox_button: button::State::new(),
+                    // folders_button: button::State::new(),
+                    // tags_button: button::State::new(),
+                    // sent_button: button::State::new(),
+                    // spam_button: button::State::new(),
+                    // trash_button: button::State::new(),
                 },
                 Step::TextInput {
                     value: String::new(),
@@ -190,8 +196,14 @@ enum Step {
     Welcome,
     RowsAndColumns {
         layout: Layout,
-        // spacing_slider: slider::State,
         spacing: u16,
+        value: String,
+        inbox_button: button::State,
+        // folders_button: button::State,
+        // tags_button: button::State,
+        // sent_button: button::State,
+        // spam_button: button::State,
+        // trash_button: button::State,
     },
     TextInput {
         value: String,
@@ -232,6 +244,7 @@ pub enum StepMessage {
     LayoutChanged(Layout),
     SpacingChanged(f32),
     ButtonPressed(String, String, String),
+    NavButtonPressed(String, String, String),
 }
 
 impl<'a> Step {
@@ -255,6 +268,11 @@ impl<'a> Step {
             StepMessage::SpacingChanged(new_spacing) => {
                 if let Step::RowsAndColumns { spacing, .. } = self {
                     *spacing = new_spacing.round() as u16;
+                }
+            }
+            StepMessage::NavButtonPressed(button, left_value, right_value) => {
+                if let Step::Calculator { value, .. } = self {
+                    println!("value  LOAD CONTENT ? {} ", value);
                 }
             }
             StepMessage::ButtonPressed(button, left_value, right_value) => {
@@ -353,9 +371,25 @@ impl<'a> Step {
             Step::Welcome => Self::welcome(),
             Step::RowsAndColumns {
                 layout,
-                //spacing_slider,
                 spacing,
-            } => Self::rows_and_columns(*layout, *spacing),
+                value,
+                inbox_button,
+                // folders_button,
+                // tags_button,
+                // sent_button,
+                // spam_button,
+                // trash_button,
+            } => Self::rows_and_columns(
+                *layout,
+                *spacing,
+                *value,
+                inbox_button,
+                // folders_button,
+                // tags_button,
+                // sent_button,
+                // spam_button,
+                // trash_button,
+            ),
             Step::TextInput {
                 value,
                 is_secure,
@@ -431,17 +465,51 @@ impl<'a> Step {
 
     fn rows_and_columns(
         layout: Layout,
-        //spacing_slider: &'a mut slider::State,
         spacing: u16,
+        value: String,
+        inbox_button: &'a mut button::State,
+        // folders_button: &mut button::State,
+        // tags_button: &mut button::State,
+        // sent_button: &mut button::State,
+        // spam_button: &mut button::State,
+        // trash_button: &mut button::State,
     ) -> Column<'a, StepMessage> {
         //let row_radio = Radio::new(Layout::Row, "Row", Some(layout), StepMessage::LayoutChanged);
         let all = ["Inbox", "Folders", "Tags", "Sent", "Spam", "Trash"];
-        let question = Column::new().padding(10).spacing(5).push(
-            all.iter()
-                .fold(Column::new().padding(5).spacing(10), |choices, language| {
-                    choices.push(Text::new(language.to_string()))
-                }),
-        );
+        let buttons = [
+            inbox_button,
+            // folders_button,
+            // tags_button,
+            // sent_button,
+            // spam_button,
+            // trash_button,
+        ];
+
+        let question = Column::new()
+            .padding(10)
+            .spacing(5)
+            .push(
+                buttons
+                    .iter()
+                    .fold(Column::new().padding(5).spacing(10), |choices, button| {
+                        choices.push(
+                            //Text::new(language.to_string())
+                            Button::new(
+                                inbox_button,
+                                Text::new("inbox")
+                                    .color(Color::WHITE)
+                                    .horizontal_alignment(HorizontalAlignment::Center),
+                            )
+                            .on_press(StepMessage::NavButtonPressed(
+                                "1".to_owned(),
+                                value.to_owned(),
+                                "test".to_owned(),
+                            ))
+                            .padding(10)
+                            .min_width(60),
+                        )
+                    }),
+            );
 
         let email_list = [
             "This is an email message you need to click and read",
