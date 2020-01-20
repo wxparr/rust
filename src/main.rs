@@ -495,7 +495,7 @@ impl<'a> Step {
                         choices.push(
                             //Text::new(language.to_string())
                             Button::new(
-                                inbox_button,
+                                button,
                                 Text::new("inbox")
                                     .color(Color::WHITE)
                                     .horizontal_alignment(HorizontalAlignment::Center),
