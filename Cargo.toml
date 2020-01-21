@@ -5,28 +5,14 @@ edition = "2018"
 
 [dependencies]
 iced = { git = "https://github.com/hecrj/iced.git#0a8302450557877cb667b51fc84383aaf0a11b02" }
-ipfs = { path = "ipfs" }
-styles = { path = "styles" }
 futures = "0.3.1"
 env_logger = "0.7.1"
 tokio = "0.1.22"
 protobuf = "=2.8.1"
 libp2p = "0.13.2"
-
-# The core APIs, including the Serialize and Deserialize traits. Always
-# required when using Serde. The "derive" feature is only required when
-# using #[derive(Serialize, Deserialize)] to make Serde work with structs
-# and enums defined in your crate.
 serde = { version = "1.0", features = ["derive"] }
-
-# Each data format lives in its own crate; the sample code below uses JSON
-# but you may be using a different one.
 serde_json = "1.0"
-
 directories = "2.0"
-
-[workspace]
-members = ["ipfs"]
 
 [patch.crates-io]
 ctr = { git = "https://github.com/koivunej/stream-ciphers.git", branch = "ctr128-64to128" }

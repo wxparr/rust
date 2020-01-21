@@ -3,13 +3,15 @@ use iced::{
     Element, Font, HorizontalAlignment, Image, Length, Row, Sandbox, Scrollable, Settings, Space,
     Text, TextInput, Vector, VerticalAlignment,
 };
-use styles::{active, button, hover};
+
+mod data;
+
+use data::styles;
 
 use serde::{Deserialize, Serialize};
 
 pub fn main() {
     env_logger::init();
-    styles::button::active();
     Tour::run(Settings::default());
 }
 
@@ -506,7 +508,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("inbox".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(style::Button::Icon),
+                .style(styles::Button::Icon),
             )
             .push(
                 Button::new(
@@ -519,7 +521,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("folders".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(style::Button::Icon),
+                .style(styles::Button::Icon),
             )
             .push(
                 Button::new(
@@ -532,7 +534,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("tags".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(style::Button::Icon),
+                .style(styles::Button::Icon),
             )
             .push(
                 Button::new(
@@ -545,7 +547,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("sent".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(style::Button::Icon),
+                .style(styles::Button::Icon),
             )
             .push(
                 Button::new(
@@ -558,7 +560,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("spam".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(style::Button::Icon),
+                .style(styles::Button::Icon),
             )
             .push(
                 Button::new(
@@ -571,7 +573,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("trash".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(style::Button::Icon),
+                .style(styles::Button::Icon),
             );
 
         let email_list = [
