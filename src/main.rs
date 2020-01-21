@@ -1,15 +1,16 @@
 use iced::{
-    button, scrollable, text_input, Align, Button, Checkbox, Color, Column, Container, Element,
-    Font, HorizontalAlignment, Image, Length, Row, Sandbox, Scrollable, Settings, Space, Text,
-    TextInput, VerticalAlignment,
+    button, scrollable, text_input, Align, Background, Button, Checkbox, Color, Column, Container,
+    Element, Font, HorizontalAlignment, Image, Length, Row, Sandbox, Scrollable, Settings, Space,
+    Text, TextInput, Vector, VerticalAlignment,
 };
+use styles::{active, button, hover};
 
 use serde::{Deserialize, Serialize};
 
 pub fn main() {
     env_logger::init();
-
-    Tour::run(Settings::default())
+    styles::button::active();
+    Tour::run(Settings::default());
 }
 
 pub struct Tour {
@@ -271,6 +272,20 @@ impl<'a> Step {
                     *value = format!("{}{}", value, button);
                     println!("value  LOAD CONTENT ? {} ", value);
                     println!("value  LOAD CONTENT ? {} ", button);
+
+                    pub enum Content {
+                        Inbox { value: String },
+                        Folders,
+                        Tags,
+                        Sent,
+                        Spam,
+                        Trash,
+                    }
+
+                    // match &value {
+                    //     // Content::Inbox { &value } => email_row,
+                    //     // Content::Folders { &value } => foleders_content,
+                    // };
                 }
             }
             StepMessage::ButtonPressed(button, left_value, right_value) => {
@@ -454,11 +469,16 @@ impl<'a> Step {
     }
 
     fn welcome() -> Column<'a, StepMessage> {
-        Self::container("Crypto Quick!")
-            .push(Text::new(
-                "Bankless Crytpo Accounting that is quick and easy to use.",
-            ))
-            .push(Image::new("resources/accounting-1.jpg"))
+        Self::container("Crypto Quick!").push(Text::new(
+            "Bankless Crytpo Accounting that is quick and easy to use.",
+        ))
+        //.push(Image::new("resources/accounting-1.jpg"))
+        // .push(
+        //     Button::new(edit_button, edit_icon())
+        //         .on_press(StepMessage::Edit)
+        //         .padding(10)
+        //         .style(style::Button::Icon),
+        // )
     }
 
     fn rows_and_columns(
@@ -579,44 +599,10 @@ impl<'a> Step {
             ));
 
         let folders_list = ["my folder", "your folder", "his folder"];
-        let foleders_content = Column::new()
-            .padding(10)
-            .spacing(5)
-            .push(folders_list.iter().fold(
-                Column::new().padding(5).spacing(10),
-                |choices, language| {
-                    choices.push(Checkbox::new(
-                        is_secure,
-                        language,
-                        StepMessage::ToggleSecureInput,
-                    ))
-                },
-            ));
-        pub enum Content {
-            Inbox  { value: String  },
-            Folders,
-            Tags,
-            Sent,
-            Spam,
-            Trash,
-        }
 
         let layout_section: Element<_> = match layout {
-            Layout::Row => Row::new()
-                .spacing(5)
-                .push(question)
-                .push(
-                    match &value {
-                        Content::Inbox { &value } => email_row,
-                        Content::Folders { &value } => foleders_content,
-                )
-                .into(),
-
-            Layout::Column => Column::new()
-                .spacing(100)
-                .push(question)
-                //.push(column_radio)
-                .into(),
+            Layout::Row => Row::new().spacing(5).push(question).push(email_row).into(),
+            Layout::Column => Column::new().spacing(100).push(email_row).into(),
         };
 
         Self::container("Inbox View")
@@ -1170,58 +1156,4 @@ fn edit_icon() -> Text {
 
 fn delete_icon() -> Text {
     icon('\u{F1F8}')
-}
-
-mod style {
-    use iced::{button, Background, Color, Vector};
-
-    pub enum Button {
-        Filter { selected: bool },
-        Icon,
-        Destructive,
-    }
-
-    impl button::StyleSheet for Button {
-        fn active(&self) -> button::Style {
-            match self {
-                Button::Filter { selected } => {
-                    if *selected {
-                        button::Style {
-                            background: Some(Background::Color(Color::from_rgb(0.2, 0.2, 0.7))),
-                            border_radius: 10,
-                            text_color: Color::WHITE,
-                            ..button::Style::default()
-                        }
-                    } else {
-                        button::Style::default()
-                    }
-                }
-                Button::Icon => button::Style {
-                    text_color: Color::from_rgb(0.5, 0.5, 0.5),
-                    ..button::Style::default()
-                },
-                Button::Destructive => button::Style {
-                    background: Some(Background::Color(Color::from_rgb(0.8, 0.2, 0.2))),
-                    border_radius: 5,
-                    text_color: Color::WHITE,
-                    shadow_offset: Vector::new(1.0, 1.0),
-                    ..button::Style::default()
-                },
-            }
-        }
-
-        fn hovered(&self) -> button::Style {
-            let active = self.active();
-
-            button::Style {
-                text_color: match self {
-                    Button::Icon => Color::from_rgb(0.2, 0.2, 0.7),
-                    Button::Filter { selected } if !selected => Color::from_rgb(0.2, 0.2, 0.7),
-                    _ => active.text_color,
-                },
-                shadow_offset: active.shadow_offset + Vector::new(0.0, 1.0),
-                ..active
-            }
-        }
-    }
 }
