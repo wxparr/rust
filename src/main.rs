@@ -617,15 +617,15 @@ impl<'a> Step {
                     ))
                 },
             ));
-        // let s: String = value.to_owned();
-        let s_slice: &str = &value[..];
+
         let layout_section: Element<_> = match layout {
             Layout::Row => Row::new()
                 .spacing(5)
                 .push(nav_list)
-                .push(match &s_slice {
-                    Some("inbox") => email_row,
-                    Some("folder") => folder_row,
+                .push(match value.as_str() {
+                    "inbox" => email_row,
+                    "folder" => folder_row,
+                    _ => email_row, // TODO: Error page?
                 })
                 .into(),
             Layout::Column => Column::new().spacing(100).push(email_row).into(),
