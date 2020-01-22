@@ -1,5 +1,49 @@
-
 use iced::{button, Background, Color, Vector};
+use serde::{Deserialize, Serialize};
+// Fonts - Icons
+// const ICONS: Font = Font::External {
+//     name: "Icons",
+//     bytes: include_bytes!("../../resources/fuzzynet.png"),
+// };
+
+// fn icon(unicode: char) -> Text {
+//     Text::new(&unicode.to_string())
+//         .font(ICONS)
+//         .width(Length::Units(20))
+//         .horizontal_alignment(HorizontalAlignment::Center)
+//         .size(20)
+// }
+
+// pub fn edit_icon() -> Text {
+//     icon('\u{F303}')
+// }
+
+// fn delete_icon() -> Text {
+//     icon('\u{F1F8}')
+// }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Filter {
+    All,
+    Active,
+    Completed,
+}
+
+impl Default for Filter {
+    fn default() -> Self {
+        Filter::All
+    }
+}
+
+// impl Filter {
+//     fn matches(&self, task: &Task) -> bool {
+//         match self {
+//             Filter::All => true,
+//             Filter::Active => !task.completed,
+//             Filter::Completed => task.completed,
+//         }
+//     }
+// }
 
 pub enum Button {
     Filter { selected: bool },

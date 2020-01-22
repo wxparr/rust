@@ -1,14 +1,14 @@
 use iced::{
-    button, scrollable, text_input, Align, Background, Button, Checkbox, Color, Column, Container,
-    Element, Font, HorizontalAlignment, Image, Length, Row, Sandbox, Scrollable, Settings, Space,
-    Text, TextInput, Vector, VerticalAlignment,
+    button, scrollable, text_input, Align, Button, Checkbox, Color, Column, Container, Element,
+    HorizontalAlignment, Image, Length, Row, Sandbox, Scrollable, Settings, Space, Text, TextInput,
+    VerticalAlignment,
 };
 
 mod data;
 
 use data::styles;
 
-use serde::{Deserialize, Serialize};
+//use serde::{Deserialize, Serialize};
 
 pub fn main() {
     env_logger::init();
@@ -271,23 +271,25 @@ impl<'a> Step {
             }
             StepMessage::NavButtonPressed(button) => {
                 if let Step::RowsAndColumns { value, .. } = self {
-                    *value = format!("{}{}", value, button);
                     println!("value  LOAD CONTENT ? {} ", value);
-                    println!("value  LOAD CONTENT ? {} ", button);
-
-                    pub enum Content {
-                        Inbox { value: String },
-                        Folders,
-                        Tags,
-                        Sent,
-                        Spam,
-                        Trash,
+                    if button == "inbox" {
+                        *value = format!("{}{}", value, button); // value and button are the same
                     }
+
+                    // pub enum Content {
+                    //     Inbox { value: String } => // do this
+                    //     Folders,
+                    //     Tags,
+                    //     Sent,
+                    //     Spam,
+                    //     Trash,
+                    // }
 
                     // match &value {
                     //     // Content::Inbox { &value } => email_row,
                     //     // Content::Folders { &value } => foleders_content,
                     // };
+                    //after match send the correct content as value
                 }
             }
             StepMessage::ButtonPressed(button, left_value, right_value) => {
@@ -494,7 +496,7 @@ impl<'a> Step {
         spam_button: &'a mut button::State,
         trash_button: &'a mut button::State,
     ) -> Column<'a, StepMessage> {
-        let question = Column::new()
+        let nav_list = Column::new()
             .padding(10)
             .spacing(5)
             .push(
@@ -600,10 +602,32 @@ impl<'a> Step {
                 },
             ));
 
-        let folders_list = ["my folder", "your folder", "his folder"];
+        let folders = ["my folder", "your folder", "his folder"];
 
+        let folder_row = Column::new()
+            .padding(10)
+            .spacing(5)
+            .push(folders.iter().fold(
+                Column::new().padding(5).spacing(10),
+                |choices, language| {
+                    choices.push(Checkbox::new(
+                        is_secure,
+                        language,
+                        StepMessage::ToggleSecureInput,
+                    ))
+                },
+            ));
+        // let s: String = value.to_owned();
+        let s_slice: &str = &value[..];
         let layout_section: Element<_> = match layout {
-            Layout::Row => Row::new().spacing(5).push(question).push(email_row).into(),
+            Layout::Row => Row::new()
+                .spacing(5)
+                .push(nav_list)
+                .push(match &s_slice {
+                    Some("inbox") => email_row,
+                    Some("folder") => folder_row,
+                })
+                .into(),
             Layout::Column => Column::new().spacing(100).push(email_row).into(),
         };
 
@@ -1088,74 +1112,4 @@ mod style_main {
             }
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Filter {
-    All,
-    Active,
-    Completed,
-}
-
-// impl Default for Filter {
-//     fn default() -> Self {
-//         Filter::All
-//     }
-// }
-
-// impl Filter {
-//     fn matches(&self, task: &Task) -> bool {
-//         match self {
-//             Filter::All => true,
-//             Filter::Active => !task.completed,
-//             Filter::Completed => task.completed,
-//         }
-//     }
-// }
-
-// fn loading_message() -> Element<'static, Message> {
-//     Container::new(
-//         Text::new("Loading...")
-//             .horizontal_alignment(HorizontalAlignment::Center)
-//             .size(50),
-//     )
-//     .width(Length::Fill)
-//     .height(Length::Fill)
-//     .center_y()
-//     .into()
-// }
-
-// fn empty_message(message: &str) -> Element<'static, Message> {
-//     Container::new(
-//         Text::new(message)
-//             .size(25)
-//             .horizontal_alignment(HorizontalAlignment::Center)
-//             .color([0.7, 0.7, 0.7]),
-//     )
-//     .width(Length::Fill)
-//     .height(Length::Units(200))
-//     .center_y()
-//     .into()
-// }
-
-// Fonts
-const ICONS: Font = Font::External {
-    name: "Icons",
-    bytes: include_bytes!("../resources/fuzzynet.png"),
-};
-
-fn icon(unicode: char) -> Text {
-    Text::new(&unicode.to_string())
-        .font(ICONS)
-        .width(Length::Units(20))
-        .horizontal_alignment(HorizontalAlignment::Center)
-        .size(20)
-}
-
-fn edit_icon() -> Text {
-    icon('\u{F303}')
-}
-
-fn delete_icon() -> Text {
-    icon('\u{F1F8}')
 }
