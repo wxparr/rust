@@ -271,25 +271,8 @@ impl<'a> Step {
             }
             StepMessage::NavButtonPressed(button) => {
                 if let Step::RowsAndColumns { value, .. } = self {
+                    *value = format!("{}", button);
                     println!("value  LOAD CONTENT ? {} ", value);
-                    if button == "inbox" {
-                        *value = format!("{}{}", value, button); // value and button are the same
-                    }
-
-                    // pub enum Content {
-                    //     Inbox { value: String } => // do this
-                    //     Folders,
-                    //     Tags,
-                    //     Sent,
-                    //     Spam,
-                    //     Trash,
-                    // }
-
-                    // match &value {
-                    //     // Content::Inbox { &value } => email_row,
-                    //     // Content::Folders { &value } => foleders_content,
-                    // };
-                    //after match send the correct content as value
                 }
             }
             StepMessage::ButtonPressed(button, left_value, right_value) => {
@@ -617,6 +600,54 @@ impl<'a> Step {
                     ))
                 },
             ));
+        let tags = ["my tag", "your tag", "his tag"];
+
+        let tag_row = Column::new().padding(10).spacing(5).push(tags.iter().fold(
+            Column::new().padding(5).spacing(10),
+            |choices, language| {
+                choices.push(Checkbox::new(
+                    is_secure,
+                    language,
+                    StepMessage::ToggleSecureInput,
+                ))
+            },
+        ));
+        let sents = ["my sent", "your sent", "his sent"];
+
+        let sent_row = Column::new().padding(10).spacing(5).push(sents.iter().fold(
+            Column::new().padding(5).spacing(10),
+            |choices, language| {
+                choices.push(Checkbox::new(
+                    is_secure,
+                    language,
+                    StepMessage::ToggleSecureInput,
+                ))
+            },
+        ));
+        let spams = ["my spams", "your spams", "his spams"];
+
+        let spam_row = Column::new().padding(10).spacing(5).push(spams.iter().fold(
+            Column::new().padding(5).spacing(10),
+            |choices, language| {
+                choices.push(Checkbox::new(
+                    is_secure,
+                    language,
+                    StepMessage::ToggleSecureInput,
+                ))
+            },
+        ));
+        let trash = ["my trash", "your trash", "his trash"];
+
+        let trash_row = Column::new().padding(10).spacing(5).push(trash.iter().fold(
+            Column::new().padding(5).spacing(10),
+            |choices, language| {
+                choices.push(Checkbox::new(
+                    is_secure,
+                    language,
+                    StepMessage::ToggleSecureInput,
+                ))
+            },
+        ));
 
         let layout_section: Element<_> = match layout {
             Layout::Row => Row::new()
@@ -624,8 +655,12 @@ impl<'a> Step {
                 .push(nav_list)
                 .push(match value.as_str() {
                     "inbox" => email_row,
-                    "folder" => folder_row,
-                    _ => email_row, // TODO: Error page?
+                    "folders" => folder_row,
+                    "tags" => tag_row,
+                    "sent" => sent_row,
+                    "spam" => spam_row,
+                    "trash" => trash_row,
+                    _ => email_row, // default is email row
                 })
                 .into(),
             Layout::Column => Column::new().spacing(100).push(email_row).into(),
