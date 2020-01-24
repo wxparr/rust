@@ -1,12 +1,12 @@
 use iced::{
-    button, scrollable, text_input, Align, Button, Checkbox, Color, Column, Container, Element,
-    HorizontalAlignment, Image, Length, Row, Sandbox, Scrollable, Settings, Space, Text, TextInput,
-    VerticalAlignment,
+    button, scrollable, Button, Checkbox, Color, Column, Container, Element, HorizontalAlignment,
+    Length, Row, Sandbox, Scrollable, Settings, Space, Text, VerticalAlignment,
 };
 
 mod data;
+//use styles;
 
-use data::styles;
+//use styles;
 
 //use serde::{Deserialize, Serialize};
 
@@ -116,49 +116,18 @@ struct Steps {
 impl Steps {
     fn new() -> Steps {
         Steps {
-            steps: vec![
-                Step::Welcome,
-                Step::RowsAndColumns {
-                    layout: Layout::Row,
-                    spacing: 20,
-                    value: String::new(),
-                    inbox_button: button::State::new(),
-                    folders_button: button::State::new(),
-                    tags_button: button::State::new(),
-                    sent_button: button::State::new(),
-                    spam_button: button::State::new(),
-                    trash_button: button::State::new(),
-                },
-                Step::TextInput {
-                    value: String::new(),
-                    is_secure: false,
-                    state: text_input::State::new(),
-                },
-                Step::Calculator {
-                    value: String::new(),
-                    operator: String::new(),
-                    any_operator: false,
-                    next_value: String::new(),
-                    equals_string: String::new(),
-                    value_int: 0_i32,
-                    one_button: button::State::new(),
-                    two_button: button::State::new(),
-                    three_button: button::State::new(),
-                    four_button: button::State::new(),
-                    five_button: button::State::new(),
-                    six_button: button::State::new(),
-                    seven_button: button::State::new(),
-                    eight_button: button::State::new(),
-                    nine_button: button::State::new(),
-                    minus_button: button::State::new(),
-                    zero_button: button::State::new(),
-                    plus_button: button::State::new(),
-                    multiply_button: button::State::new(),
-                    divide_button: button::State::new(),
-                    equals_button: button::State::new(),
-                    clear_button: button::State::new(),
-                },
-            ],
+            steps: vec![Step::RowsAndColumns {
+                is_secure: false,
+                layout: Layout::Row,
+                spacing: 20,
+                value: String::new(),
+                inbox_button: button::State::new(),
+                folders_button: button::State::new(),
+                tags_button: button::State::new(),
+                sent_button: button::State::new(),
+                spam_button: button::State::new(),
+                trash_button: button::State::new(),
+            }],
             current: 0,
         }
     }
@@ -198,8 +167,8 @@ impl Steps {
 
 enum Step {
     // see above vec
-    Welcome,
     RowsAndColumns {
+        is_secure: bool,
         layout: Layout,
         spacing: u16,
         value: String,
@@ -210,35 +179,6 @@ enum Step {
         spam_button: button::State,
         trash_button: button::State,
     },
-    TextInput {
-        value: String,
-        is_secure: bool,
-        state: text_input::State,
-    },
-    Calculator {
-        value: String,
-        operator: String,
-        any_operator: bool,
-        next_value: String,
-        equals_string: String,
-        value_int: i32,
-        one_button: button::State,
-        two_button: button::State,
-        three_button: button::State,
-        four_button: button::State,
-        five_button: button::State,
-        six_button: button::State,
-        seven_button: button::State,
-        eight_button: button::State,
-        nine_button: button::State,
-        minus_button: button::State,
-        zero_button: button::State,
-        plus_button: button::State,
-        multiply_button: button::State,
-        divide_button: button::State,
-        equals_button: button::State,
-        clear_button: button::State,
-    },
 }
 
 #[derive(Debug, Clone)]
@@ -247,7 +187,6 @@ pub enum StepMessage {
     ToggleSecureInput(bool),
     LayoutChanged(Layout),
     SpacingChanged(f32),
-    ButtonPressed(String, String, String),
     NavButtonPressed(String),
 }
 
@@ -255,7 +194,7 @@ impl<'a> Step {
     fn update(&mut self, msg: StepMessage) {
         match msg {
             StepMessage::ToggleSecureInput(toggle) => {
-                if let Step::TextInput { is_secure, .. } = self {
+                if let Step::RowsAndColumns { is_secure, .. } = self {
                     *is_secure = toggle;
                 }
             }
@@ -275,73 +214,8 @@ impl<'a> Step {
                     println!("value  LOAD CONTENT ? {} ", value);
                 }
             }
-            StepMessage::ButtonPressed(button, left_value, right_value) => {
-                if let Step::Calculator {
-                    value,
-                    operator,
-                    next_value,
-                    any_operator,
-                    equals_string,
-                    value_int,
-                    ..
-                } = self
-                {
-                    println!("Button Clicked {} ", button);
-                    if any_operator == &false
-                        && button != "+"
-                        && button != "-"
-                        && button != "*"
-                        && button != "/"
-                    {
-                        println!("any_operator should be false ? {} ", any_operator);
-                        *value = format!("{}{}", left_value, button);
-                        println!("value {} ", value);
-                    }
-                    if any_operator == &true
-                        && button != "+"
-                        && button != "-"
-                        && button != "="
-                        && button != "*"
-                        && button != "/"
-                    {
-                        println!("any_operator  is true ? {} ", any_operator);
-                        *next_value = format!("{}{}", right_value, button);
-                        println!("next_value {} ", next_value);
-                    }
-                    if button == "-" || button == "+" || button == "*" || button == "/" {
-                        *any_operator = true;
-                        *operator = button.to_string();
-                    } else {
-                        //*operator = "".to_string();
-                    }
-                    if button == "=" {
-                        *any_operator = false;
-                        *equals_string = "=".to_string();
-                        let value: i32 = value.parse().unwrap();
-                        let next_value: i32 = next_value.parse().unwrap();
-                        if operator == "+" {
-                            *value_int = value + next_value
-                        } else if operator == "-" {
-                            *value_int = value - next_value
-                        } else if operator == "*" {
-                            *value_int = value * next_value
-                        } else if operator == "/" {
-                            *value_int = value / next_value
-                        } else {
-                            *value_int = value + next_value
-                        }
-                    }
-                    if button == "Clr" {
-                        *equals_string = "".to_string();
-                        *operator = "".to_string();
-                        *value = "".to_string();
-                        *next_value = "".to_string();
-                        *value_int = 0;
-                    }
-                }
-            }
             StepMessage::InputChanged(new_value) => {
-                if let Step::TextInput { value, .. } = self {
+                if let Step::RowsAndColumns { value, .. } = self {
                     *value = new_value;
                 }
             }
@@ -350,26 +224,20 @@ impl<'a> Step {
 
     fn title(&self) -> &str {
         match self {
-            Step::Welcome => "Welcome",
             Step::RowsAndColumns { .. } => "Rows and columns",
-            Step::TextInput { .. } => "Search Input",
-            Step::Calculator { .. } => "Crypto Calculator",
         }
     }
 
     fn can_continue(&self) -> bool {
         match self {
-            Step::Welcome => true,
             Step::RowsAndColumns { .. } => true,
-            Step::TextInput { .. } => true,
-            Step::Calculator { value, .. } => value.is_empty(),
         }
     }
 
     fn view(&mut self) -> Element<StepMessage> {
         match self {
-            Step::Welcome => Self::welcome(),
             Step::RowsAndColumns {
+                is_secure,
                 layout,
                 spacing,
                 value,
@@ -380,6 +248,7 @@ impl<'a> Step {
                 spam_button,
                 trash_button,
             } => Self::rows_and_columns(
+                *is_secure,
                 *layout,
                 *spacing,
                 value.to_string(),
@@ -390,85 +259,16 @@ impl<'a> Step {
                 spam_button,
                 trash_button,
             ),
-            Step::TextInput {
-                value,
-                is_secure,
-                state,
-            } => Self::text_input(value, *is_secure, state),
-            Step::Calculator {
-                value,
-                operator,
-                any_operator,
-                next_value,
-                equals_string,
-                value_int,
-                one_button,
-                two_button,
-                three_button,
-                four_button,
-                five_button,
-                six_button,
-                seven_button,
-                eight_button,
-                nine_button,
-                minus_button,
-                zero_button,
-                plus_button,
-                multiply_button,
-                divide_button,
-                equals_button,
-                clear_button,
-            } => Self::calculator(
-                value,
-                operator,
-                *any_operator,
-                next_value,
-                equals_string,
-                value_int,
-                one_button,
-                two_button,
-                three_button,
-                four_button,
-                five_button,
-                six_button,
-                seven_button,
-                eight_button,
-                nine_button,
-                minus_button,
-                zero_button,
-                plus_button,
-                multiply_button,
-                divide_button,
-                equals_button,
-                clear_button,
-            ),
         }
         .into()
     }
-
-    // this is a re-usable container
-    // fn inbox_container(title: &str) -> Row<'a, StepMessage> {
-    //     Row::new().spacing(15).push(Text::new(title).size(40))
-    // }
 
     fn container(title: &str) -> Column<'a, StepMessage> {
         Column::new().spacing(20).push(Text::new(title).size(40))
     }
 
-    fn welcome() -> Column<'a, StepMessage> {
-        Self::container("Crypto Quick!").push(Text::new(
-            "Bankless Crytpo Accounting that is quick and easy to use.",
-        ))
-        //.push(Image::new("resources/accounting-1.jpg"))
-        // .push(
-        //     Button::new(edit_button, edit_icon())
-        //         .on_press(StepMessage::Edit)
-        //         .padding(10)
-        //         .style(style::Button::Icon),
-        // )
-    }
-
     fn rows_and_columns(
+        is_secure: bool,
         layout: Layout,
         spacing: u16,
         value: String,
@@ -480,8 +280,8 @@ impl<'a> Step {
         trash_button: &'a mut button::State,
     ) -> Column<'a, StepMessage> {
         let nav_list = Column::new()
-            .padding(10)
-            .spacing(5)
+            .padding(5)
+            .spacing(spacing)
             .push(
                 Button::new(
                     inbox_button,
@@ -493,7 +293,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("inbox".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(styles::Button::Icon),
+                .style(nav::button::Button::Icon),
             )
             .push(
                 Button::new(
@@ -561,6 +361,20 @@ impl<'a> Step {
                 .style(styles::Button::Icon),
             );
 
+        // reduced to newColumn
+        fn newColumn(data: Vec<T>, is_secure: bool) -> <Checkbox> {
+            Column::new().padding(10).spacing(5).push(data.iter().fold(
+                Column::new().padding(5).spacing(10),
+                |choices, language| {
+                    choices.push(Checkbox::new(
+                        is_secure,
+                        language,
+                        StepMessage::ToggleSecureInput,
+                    ))
+                },
+            ));
+        }
+
         let email_list = [
             "This is an email message you need to click and read",
             "This is an email message you need to click and read",
@@ -569,85 +383,22 @@ impl<'a> Step {
             "This is an email message you need to click and read",
             "This is an email message you need to click and read",
         ];
-
-        let is_secure = true;
-        let email_row = Column::new()
-            .padding(10)
-            .spacing(5)
-            .push(email_list.iter().fold(
-                Column::new().padding(5).spacing(10),
-                |choices, language| {
-                    choices.push(Checkbox::new(
-                        is_secure,
-                        language,
-                        StepMessage::ToggleSecureInput,
-                    ))
-                },
-            ));
+        let email_row = newColumn(email_list, is_secure);
 
         let folders = ["my folder", "your folder", "his folder"];
+        let folder_row = newColumn(folders, is_secure);
 
-        let folder_row = Column::new()
-            .padding(10)
-            .spacing(5)
-            .push(folders.iter().fold(
-                Column::new().padding(5).spacing(10),
-                |choices, language| {
-                    choices.push(Checkbox::new(
-                        is_secure,
-                        language,
-                        StepMessage::ToggleSecureInput,
-                    ))
-                },
-            ));
         let tags = ["my tag", "your tag", "his tag"];
+        let tag_row = newColumn(tags, is_secure);
 
-        let tag_row = Column::new().padding(10).spacing(5).push(tags.iter().fold(
-            Column::new().padding(5).spacing(10),
-            |choices, language| {
-                choices.push(Checkbox::new(
-                    is_secure,
-                    language,
-                    StepMessage::ToggleSecureInput,
-                ))
-            },
-        ));
         let sents = ["my sent", "your sent", "his sent"];
+        let sent_row = newColumn(sents, is_secure);
 
-        let sent_row = Column::new().padding(10).spacing(5).push(sents.iter().fold(
-            Column::new().padding(5).spacing(10),
-            |choices, language| {
-                choices.push(Checkbox::new(
-                    is_secure,
-                    language,
-                    StepMessage::ToggleSecureInput,
-                ))
-            },
-        ));
         let spams = ["my spams", "your spams", "his spams"];
+        let spam_row = newColumn(spams, is_secure);
 
-        let spam_row = Column::new().padding(10).spacing(5).push(spams.iter().fold(
-            Column::new().padding(5).spacing(10),
-            |choices, language| {
-                choices.push(Checkbox::new(
-                    is_secure,
-                    language,
-                    StepMessage::ToggleSecureInput,
-                ))
-            },
-        ));
         let trash = ["my trash", "your trash", "his trash"];
-
-        let trash_row = Column::new().padding(10).spacing(5).push(trash.iter().fold(
-            Column::new().padding(5).spacing(10),
-            |choices, language| {
-                choices.push(Checkbox::new(
-                    is_secure,
-                    language,
-                    StepMessage::ToggleSecureInput,
-                ))
-            },
-        ));
+        let trash_row = newColumn(trash, is_secure);
 
         let layout_section: Element<_> = match layout {
             Layout::Row => Row::new()
@@ -669,366 +420,6 @@ impl<'a> Step {
         Self::container("Inbox View")
             .spacing(80)
             .push(layout_section)
-    }
-
-    fn text_input(
-        value: &str,
-        is_secure: bool,
-        state: &'a mut text_input::State,
-    ) -> Column<'a, StepMessage> {
-        let text_input =
-            TextInput::new(state, "Type to search...", value, StepMessage::InputChanged)
-                .padding(10)
-                .size(30);
-        Self::container("Text input")
-            .push(Text::new("Search for the Crypto Market Rates."))
-            .push(if is_secure {
-                text_input.password()
-            } else {
-                text_input
-            })
-            .push(Checkbox::new(
-                is_secure,
-                "Enable password mode",
-                StepMessage::ToggleSecureInput,
-            ))
-            .push(Text::new("See the results below:"))
-            .push(
-                Text::new(if value.is_empty() {
-                    "You have not typed anything yet..."
-                } else {
-                    value
-                })
-                .width(Length::Fill)
-                .horizontal_alignment(HorizontalAlignment::Center),
-            )
-    }
-
-    fn calculator(
-        value: &str,
-        operator: &str,
-        any_operator: bool,
-        next_value: &str,
-        equals_string: &str,
-        value_int: &i32,
-        one_button: &'a mut button::State,
-        two_button: &'a mut button::State,
-        three_button: &'a mut button::State,
-        four_button: &'a mut button::State,
-        five_button: &'a mut button::State,
-        six_button: &'a mut button::State,
-        seven_button: &'a mut button::State,
-        eight_button: &'a mut button::State,
-        nine_button: &'a mut button::State,
-        minus_button: &'a mut button::State,
-        zero_button: &'a mut button::State,
-        plus_button: &'a mut button::State,
-        multiply_button: &'a mut button::State,
-        divide_button: &'a mut button::State,
-        equals_button: &'a mut button::State,
-        clear_button: &'a mut button::State,
-    ) -> Column<'a, StepMessage> {
-        Self::container("Crypto Quick")
-            .push(Text::new("Crypto Calculator "))
-            .push(Text::new(any_operator.to_string()))
-            .push(
-                Container::new(
-                    Row::new()
-                        .align_items(Align::Start)
-                        .spacing(25)
-                        .push(Text::new(value.to_string()).size(50))
-                        .push(Text::new(operator.to_string()).size(50))
-                        .push(Text::new(next_value.to_string()).size(50))
-                        .push(Text::new(equals_string.to_string()).size(50))
-                        .push(Text::new(value_int.to_string()).size(50)),
-                )
-                .style(style_text_input::Container),
-            )
-            .push(
-                Container::new(
-                    Row::new()
-                        .align_items(Align::Start)
-                        .spacing(10)
-                        .push(
-                            Button::new(
-                                one_button,
-                                Text::new("1")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center)
-                                    .vertical_alignment(VerticalAlignment::Top),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "1".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        )
-                        .push(
-                            Button::new(
-                                two_button,
-                                Text::new("2")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "2".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        )
-                        .push(
-                            Button::new(
-                                three_button,
-                                Text::new("3")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "3".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        ),
-                )
-                .style(style_action_nav::Container),
-            )
-            .push(
-                Container::new(
-                    Row::new()
-                        .align_items(Align::Start)
-                        .spacing(10)
-                        .push(
-                            Button::new(
-                                four_button,
-                                Text::new("4")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center)
-                                    .vertical_alignment(VerticalAlignment::Top),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "4".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        )
-                        .push(
-                            Button::new(
-                                five_button,
-                                Text::new("5")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "5".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        )
-                        .push(
-                            Button::new(
-                                six_button,
-                                Text::new("6")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "6".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        ),
-                )
-                .style(style_action_nav::Container),
-            )
-            .push(
-                Container::new(
-                    Row::new()
-                        .align_items(Align::Start)
-                        .spacing(10)
-                        .push(
-                            Button::new(
-                                seven_button,
-                                Text::new("7")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center)
-                                    .vertical_alignment(VerticalAlignment::Top),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "7".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        )
-                        .push(
-                            Button::new(
-                                eight_button,
-                                Text::new("8")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "8".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        )
-                        .push(
-                            Button::new(
-                                nine_button,
-                                Text::new("9")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "9".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        ),
-                )
-                .style(style_action_nav::Container),
-            )
-            .push(
-                Container::new(
-                    Row::new()
-                        .align_items(Align::Start)
-                        .spacing(10)
-                        .push(
-                            Button::new(
-                                minus_button,
-                                Text::new("-")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center)
-                                    .vertical_alignment(VerticalAlignment::Top),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "-".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        )
-                        .push(
-                            Button::new(
-                                zero_button,
-                                Text::new("0")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "0".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        )
-                        .push(
-                            Button::new(
-                                plus_button,
-                                Text::new("+")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "+".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        ),
-                )
-                .style(style_action_nav::Container),
-            )
-            .push(
-                Container::new(
-                    Row::new()
-                        .align_items(Align::Start)
-                        .spacing(10)
-                        .push(
-                            Button::new(
-                                multiply_button,
-                                Text::new("*")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center)
-                                    .vertical_alignment(VerticalAlignment::Top),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "*".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        )
-                        .push(
-                            Button::new(
-                                divide_button,
-                                Text::new("/")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "/".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        )
-                        .push(
-                            Button::new(
-                                equals_button,
-                                Text::new("=")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "=".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        )
-                        .push(
-                            Button::new(
-                                clear_button,
-                                Text::new("Clr")
-                                    .color(Color::WHITE)
-                                    .horizontal_alignment(HorizontalAlignment::Center),
-                            )
-                            .on_press(StepMessage::ButtonPressed(
-                                "Clr".to_owned(),
-                                value.to_owned(),
-                                next_value.to_owned(),
-                            ))
-                            .padding(10)
-                            .min_width(60),
-                        ),
-                )
-                .style(style_action_nav::Container),
-            )
     }
 }
 

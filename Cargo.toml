@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-iced = { git = "https://github.com/hecrj/iced.git#0a8302450557877cb667b51fc84383aaf0a11b02" }
+iced = { git = "https://github.com/hecrj/iced.git#63fc539a251b00333fb140717180b315b119c886" }
 futures = "0.3.1"
 env_logger = "0.7.1"
 tokio = "0.1.22"
