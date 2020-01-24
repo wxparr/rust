@@ -362,7 +362,7 @@ impl<'a> Step {
             );
 
         // reduced to newColumn
-        fn newColumn(data: Vec<T>, is_secure: bool) -> <Checkbox> {
+        fn new_column(data: Vec<&str>, is_secure: bool) -> Column<StepMessage> {
             Column::new().padding(10).spacing(5).push(data.iter().fold(
                 Column::new().padding(5).spacing(10),
                 |choices, language| {
@@ -372,10 +372,10 @@ impl<'a> Step {
                         StepMessage::ToggleSecureInput,
                     ))
                 },
-            ));
+            ))
         }
 
-        let email_list = [
+        let email_list = vec![
             "This is an email message you need to click and read",
             "This is an email message you need to click and read",
             "This is an email message you need to click and read",
@@ -383,22 +383,22 @@ impl<'a> Step {
             "This is an email message you need to click and read",
             "This is an email message you need to click and read",
         ];
-        let email_row = newColumn(email_list, is_secure);
+        let email_row = new_column(email_list, is_secure);
 
-        let folders = ["my folder", "your folder", "his folder"];
-        let folder_row = newColumn(folders, is_secure);
+        let folders = vec!["my folder", "your folder", "his folder"];
+        let folder_row = new_column(folders, is_secure);
 
-        let tags = ["my tag", "your tag", "his tag"];
-        let tag_row = newColumn(tags, is_secure);
+        let tags = vec!["my tag", "your tag", "his tag"];
+        let tag_row = new_column(tags, is_secure);
 
-        let sents = ["my sent", "your sent", "his sent"];
-        let sent_row = newColumn(sents, is_secure);
+        let sents = vec!["my sent", "your sent", "his sent"];
+        let sent_row = new_column(sents, is_secure);
 
-        let spams = ["my spams", "your spams", "his spams"];
-        let spam_row = newColumn(spams, is_secure);
+        let spams = vec!["my spams", "your spams", "his spams"];
+        let spam_row = new_column(spams, is_secure);
 
-        let trash = ["my trash", "your trash", "his trash"];
-        let trash_row = newColumn(trash, is_secure);
+        let trash = vec!["my trash", "your trash", "his trash"];
+        let trash_row = new_column(trash, is_secure);
 
         let layout_section: Element<_> = match layout {
             Layout::Row => Row::new()
