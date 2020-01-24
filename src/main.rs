@@ -296,24 +296,12 @@ impl<'a> Step {
         let nav_list = Column::new()
             .padding(5)
             .spacing(spacing)
-            .push(
-                new_button(inbox_button, "inbox")
-            )
-            .push(
-                new_button(folders_button, "folders")
-            )
-            .push(
-                new_button(tags_button, "tags")
-            )
-            .push(
-                new_button(sent_button, "sent")
-            )
-            .push(
-                new_button(spam_button, "spam")
-            )
-            .push(
-                new_button(trash_button, "trash")
-            );
+            .push(new_button(inbox_button, "inbox"))
+            .push(new_button(folders_button, "folders"))
+            .push(new_button(tags_button, "tags"))
+            .push(new_button(sent_button, "sent"))
+            .push(new_button(spam_button, "spam"))
+            .push(new_button(trash_button, "trash"));
 
         // reduced to newColumn
         fn new_column(data: Vec<&str>, is_secure: bool) -> Column<StepMessage> {
