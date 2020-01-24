@@ -1,4 +1,4 @@
-use iced::{button, Background, Color, Length, HorizontalAlignment, Text, Font};
+use iced::{button, Background, Color, Font, HorizontalAlignment, Length, Text, Vector};
 use serde::{Deserialize, Serialize};
 // Fonts - Icons
 const ICONS: Font = Font::External {
@@ -35,16 +35,6 @@ impl Default for Filter {
     }
 }
 
-impl Filter {
-    fn matches(&self) -> bool {
-        match self {
-            Filter::All => true,
-            Filter::Active => true,
-            Filter::Completed => false,
-        }
-    }
-}
-
 pub enum Button {
     Filter { selected: bool },
     Icon,
@@ -71,46 +61,26 @@ impl button::StyleSheet for Button {
                 ..button::Style::default()
             },
             Button::Destructive => button::Style {
-            //     background: Some(Background::Color(Color::from_rgb(0.8, 0.2, 0.2))),
-            //     border_radius: 5,
-            //     text_color: Color::WHITE,
-            //     shadow_offset: Vector::new(1.0, 1.0),
-            //     ..button::Style::default()
-            // },
+                background: Some(Background::Color(Color::from_rgb(0.8, 0.2, 0.2))),
+                border_radius: 5,
+                text_color: Color::WHITE,
+                shadow_offset: Vector::new(1.0, 1.0),
+                ..button::Style::default()
+            },
         }
     }
 
     fn hovered(&self) -> button::Style {
         let active = self.active();
 
-        // button::Style {
-        //     text_color: match self {
-        //         Button::Icon => Color::from_rgb(0.2, 0.2, 0.7),
-        //         Button::Filter { selected } if !selected => Color::from_rgb(0.2, 0.2, 0.7),
-        //         _ => active.text_color,
-        //     },
-        //     shadow_offset: active.shadow_offset + Vector::new(0.0, 1.0),
-        //     ..active
-        // }
-    }
-}
-
-pub enum Button {
-    Lebel,
-}
-
-impl button::StyleSheet for Button {
-    fn nav_button(state: &mut button::State, label: &str) -> Button {
-        Button::new(
-            state,
-            Text::new(label)
-                .color(Color::BLACK)
-                .horizontal_alignment(HorizontalAlignment::Center)
-                .vertical_alignment(VerticalAlignment::Top),
-        )
-        .on_press(NavMessage::NavButtonPressed(label.to_owned()))
-        .padding(3)
-        .min_width(50)
-        .style(button::Button::Icon),
+        button::Style {
+            text_color: match self {
+                Button::Icon => Color::from_rgb(0.2, 0.2, 0.7),
+                Button::Filter { selected } if !selected => Color::from_rgb(0.2, 0.2, 0.7),
+                _ => active.text_color,
+            },
+            shadow_offset: active.shadow_offset + Vector::new(0.0, 1.0),
+            ..active
+        }
     }
 }

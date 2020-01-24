@@ -293,7 +293,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("inbox".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(nav::button::Button::Icon),
+                .style(data::styles::Button::Icon),
             )
             .push(
                 Button::new(
@@ -306,7 +306,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("folders".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(styles::Button::Icon),
+                .style(data::styles::Button::Icon),
             )
             .push(
                 Button::new(
@@ -319,7 +319,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("tags".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(styles::Button::Icon),
+                .style(data::styles::Button::Icon),
             )
             .push(
                 Button::new(
@@ -332,7 +332,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("sent".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(styles::Button::Icon),
+                .style(data::styles::Button::Icon),
             )
             .push(
                 Button::new(
@@ -345,7 +345,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("spam".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(styles::Button::Icon),
+                .style(data::styles::Button::Icon),
             )
             .push(
                 Button::new(
@@ -358,7 +358,7 @@ impl<'a> Step {
                 .on_press(StepMessage::NavButtonPressed("trash".to_owned()))
                 .padding(3)
                 .min_width(50)
-                .style(styles::Button::Icon),
+                .style(data::styles::Button::Icon),
             );
 
         // reduced to newColumn
