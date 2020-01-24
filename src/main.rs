@@ -279,86 +279,40 @@ impl<'a> Step {
         spam_button: &'a mut button::State,
         trash_button: &'a mut button::State,
     ) -> Column<'a, StepMessage> {
+        fn new_button<'a>(state: &'a mut button::State, label: &str) -> Button<'a, StepMessage> {
+            Button::new(
+                state,
+                Text::new(label)
+                    .color(Color::BLACK)
+                    .horizontal_alignment(HorizontalAlignment::Center)
+                    .vertical_alignment(VerticalAlignment::Top),
+            )
+            .on_press(StepMessage::NavButtonPressed(label.to_owned()))
+            .padding(3)
+            .min_width(50)
+            .style(data::styles::Button::Icon)
+        }
+
         let nav_list = Column::new()
             .padding(5)
             .spacing(spacing)
             .push(
-                Button::new(
-                    inbox_button,
-                    Text::new("inbox")
-                        .color(Color::BLACK)
-                        .horizontal_alignment(HorizontalAlignment::Center)
-                        .vertical_alignment(VerticalAlignment::Top),
-                )
-                .on_press(StepMessage::NavButtonPressed("inbox".to_owned()))
-                .padding(3)
-                .min_width(50)
-                .style(data::styles::Button::Icon),
+                new_button(inbox_button, "inbox")
             )
             .push(
-                Button::new(
-                    folders_button,
-                    Text::new("folders")
-                        .color(Color::BLACK)
-                        .horizontal_alignment(HorizontalAlignment::Center)
-                        .vertical_alignment(VerticalAlignment::Top),
-                )
-                .on_press(StepMessage::NavButtonPressed("folders".to_owned()))
-                .padding(3)
-                .min_width(50)
-                .style(data::styles::Button::Icon),
+                new_button(folders_button, "folders")
             )
             .push(
-                Button::new(
-                    tags_button,
-                    Text::new("tags")
-                        .color(Color::BLACK)
-                        .horizontal_alignment(HorizontalAlignment::Center)
-                        .vertical_alignment(VerticalAlignment::Top),
-                )
-                .on_press(StepMessage::NavButtonPressed("tags".to_owned()))
-                .padding(3)
-                .min_width(50)
-                .style(data::styles::Button::Icon),
+                new_button(tags_button, "tags")
             )
             .push(
-                Button::new(
-                    sent_button,
-                    Text::new("sent")
-                        .color(Color::BLACK)
-                        .horizontal_alignment(HorizontalAlignment::Center)
-                        .vertical_alignment(VerticalAlignment::Top),
-                )
-                .on_press(StepMessage::NavButtonPressed("sent".to_owned()))
-                .padding(3)
-                .min_width(50)
-                .style(data::styles::Button::Icon),
+                new_button(sent_button, "sent")
             )
             .push(
-                Button::new(
-                    spam_button,
-                    Text::new("spam")
-                        .color(Color::BLACK)
-                        .horizontal_alignment(HorizontalAlignment::Center)
-                        .vertical_alignment(VerticalAlignment::Top),
-                )
-                .on_press(StepMessage::NavButtonPressed("spam".to_owned()))
-                .padding(3)
-                .min_width(50)
-                .style(data::styles::Button::Icon),
+                new_button(spam_button, "spam")
             )
             .push(
-                Button::new(
-                    trash_button,
-                    Text::new("trash")
-                        .color(Color::BLACK)
-                        .horizontal_alignment(HorizontalAlignment::Center)
-                        .vertical_alignment(VerticalAlignment::Top),
-                )
-                .on_press(StepMessage::NavButtonPressed("trash".to_owned()))
-                .padding(3)
-                .min_width(50)
-                .style(data::styles::Button::Icon),
+                new_button(trash_button, "trash")
             );
 
         // reduced to newColumn
